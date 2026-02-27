@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACS Saúde — Sistema do Agente Comunitário</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+
+  :root {
+    --verde: #1a7a4a;
+    --verde-claro: #2db870;
+    --verde-fraco: #e8f7ef;
+    --azul: #1565c0;
+    --azul-claro: #e8f0fe;
+    --amarelo: #f9a825;
+    --amarelo-fraco: #fff8e1;
+    --vermelho: #c62828;
+    --vermelho-fraco: #ffebee;
+    --laranja: #e65100;
+    --laranja-fraco: #fff3e0;
+    --cinza-100: #f5f5f5;
+    --cinza-200: #eeeeee;
+    --cinza-300: #e0e0e0;
+    --cinza-500: #9e9e9e;
+    --cinza-700: #616161;
+    --cinza-900: #212121;
+    --branco: #ffffff;
+    --sombra: 0 2px 8px rgba(0,0,0,0.08);
+    --sombra-md: 0 4px 16px rgba(0,0,0,0.12);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'IBM Plex Sans', sans-serif; background:#f0f4f8; color:var(--cinza-900); min-height:100vh; }
+
+  /* ===== LAYOUT ===== */
+  .app { display:flex; height:100vh; overflow:hidden; }
+  .sidebar { width:240px; background:var(--verde); display:flex; flex-direction:column; flex-shrink:0; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .topbar { background:var(--branco); border-bottom:2px solid var(--verde-claro); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .content { flex:1; overflow-y:auto; padding:24px; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar-logo { padding:20px 16px; border-bottom:1px solid rgba(255,255,255,0.15); }
+  .sidebar-logo h1 { color:#fff; font-size:18px; font-weight:700; letter-spacing:-0.5px; }
+  .sidebar-logo p { color:rgba(255,255,255,0.7); font-size:11px; margin-top:2px; }
+
+  .sidebar-nav { flex:1; padding:12px 8px; overflow-y:auto; }
+  .nav-section { margin-bottom:16px; }
+  .nav-label { color:rgba(255,255,255,0.5); font-size:10px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; padding:0 8px; margin-bottom:6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-sm); cursor:pointer; color:rgba(255,255,255,0.8); font-size:13.5px; transition:all 0.15s; margin-bottom:2px; }
+  .nav-item:hover { background:rgba(255,255,255,0.12); color:#fff; }
+  .nav-item.active { background:rgba(255,255,255,0.2); color:#fff; font-weight:600; }
+  .nav-item .icon { font-size:16px; width:20px; text-align:center; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .nav-item .icon svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .card-title .icon svg { width:18px; height:18px; stroke:var(--verde); fill:none; stroke-width:2; vertical-align:middle; }
+  .sidebar-logo .logo-icon svg { width:28px; height:28px; stroke:#fff; fill:none; stroke-width:2; }
+  .nav-badge { margin-left:auto; background:var(--amarelo); color:var(--cinza-900); font-size:10px; font-weight:700; padding:2px 6px; border-radius:10px; }
+
+  .sidebar-footer { padding:16px; border-top:1px solid rgba(255,255,255,0.15); }
+  .acs-profile { display:flex; align-items:center; gap:10px; }
+  .acs-avatar { width:36px; height:36px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; }
+  .acs-info h3 { color:#fff; font-size:13px; font-weight:600; }
+  .acs-info p { color:rgba(255,255,255,0.6); font-size:11px; }
+
+  /* ===== TOPBAR ===== */
+  .topbar-title { font-size:17px; font-weight:700; color:var(--cinza-900); }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .topbar-date { font-size:12px; color:var(--cinza-700); font-family:'IBM Plex Mono'; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius-sm); border:none; cursor:pointer; font-size:13px; font-weight:500; font-family:'IBM Plex Sans'; transition:all 0.15s; }
+  .btn-primary { background:var(--verde); color:#fff; }
+  .btn-primary:hover { background:#155a38; }
+  .btn-secondary { background:var(--cinza-100); color:var(--cinza-700); border:1px solid var(--cinza-300); }
+  .btn-secondary:hover { background:var(--cinza-200); }
+  .btn-danger { background:var(--vermelho-fraco); color:var(--vermelho); border:1px solid #ef9a9a; }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+
+  /* ===== PAGES ===== */
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* ===== CARDS ===== */
+  .card { background:var(--branco); border-radius:var(--radius); box-shadow:var(--sombra); padding:20px; margin-bottom:16px; }
+  .card-title { font-size:15px; font-weight:700; color:var(--cinza-900); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .card-title .icon { font-size:18px; }
+
+  /* ===== STATS ===== */
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:20px; }
+  .stat-card { background:var(--branco); border-radius:var(--radius); box-shadow:var(--sombra); padding:16px; border-left:4px solid var(--verde); }
+  .stat-card.amarelo { border-left-color:var(--amarelo); }
+  .stat-card.vermelho { border-left-color:var(--vermelho); }
+  .stat-card.azul { border-left-color:var(--azul); }
+  .stat-card.laranja { border-left-color:var(--laranja); }
+  .stat-number { font-size:28px; font-weight:700; font-family:'IBM Plex Mono'; color:var(--cinza-900); }
+  .stat-label { font-size:12px; color:var(--cinza-700); margin-top:2px; }
+  .stat-sub { font-size:11px; color:var(--cinza-500); margin-top:4px; }
+
+  /* ===== TABLES ===== */
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { background:var(--cinza-100); padding:10px 12px; text-align:left; font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px; color:var(--cinza-700); border-bottom:2px solid var(--cinza-200); white-space:nowrap; }
+  td { padding:10px 12px; border-bottom:1px solid var(--cinza-200); vertical-align:middle; }
+  tr:hover td { background:#f8fffe; }
+  .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-green { background:var(--verde-fraco); color:var(--verde); }
+  .badge-red { background:var(--vermelho-fraco); color:var(--vermelho); }
+  .badge-yellow { background:var(--amarelo-fraco); color:#795600; }
+  .badge-orange { background:var(--laranja-fraco); color:var(--laranja); }
+  .badge-blue { background:var(--azul-claro); color:var(--azul); }
+  .badge-gray { background:var(--cinza-200); color:var(--cinza-700); }
+
+  /* ===== SEARCH & FILTERS ===== */
+  .search-bar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .input { padding:8px 12px; border:1px solid var(--cinza-300); border-radius:var(--radius-sm); font-size:13px; font-family:'IBM Plex Sans'; color:var(--cinza-900); background:#fff; }
+  .input:focus { outline:none; border-color:var(--verde); box-shadow:0 0 0 2px rgba(26,122,74,0.15); }
+  .input-lg { flex:1; min-width:200px; }
+  select.input { cursor:pointer; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:#fff; border-radius:var(--radius); box-shadow:0 8px 40px rgba(0,0,0,0.2); width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; }
+  .modal-header { padding:18px 20px; border-bottom:1px solid var(--cinza-200); display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+  .modal-header h2 { font-size:16px; font-weight:700; }
+  .modal-body { padding:20px; overflow-y:auto; }
+  .modal-footer { padding:16px 20px; border-top:1px solid var(--cinza-200); display:flex; gap:8px; justify-content:flex-end; flex-shrink:0; }
+  .close-btn { background:none; border:none; font-size:20px; cursor:pointer; color:var(--cinza-500); padding:4px; }
+  .close-btn:hover { color:var(--cinza-900); }
+
+  /* ===== FORM ===== */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-grid.cols3 { grid-template-columns:1fr 1fr 1fr; }
+  .form-grid.col1 { grid-template-columns:1fr; }
+  .form-group { display:flex; flex-direction:column; gap:4px; }
+  .form-group.span2 { grid-column:span 2; }
+  .form-group.span3 { grid-column:span 3; }
+  label { font-size:12px; font-weight:600; color:var(--cinza-700); }
+  .section-divider { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--verde); border-bottom:2px solid var(--verde-fraco); padding-bottom:6px; margin:16px 0 12px; grid-column:1/-1; }
+
+  /* ===== RISCO ===== */
+  .risco-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:5px; }
+  .risco-alto { background:var(--vermelho); }
+  .risco-medio { background:var(--amarelo); }
+  .risco-baixo { background:var(--verde-claro); }
+
+  /* ===== AGENDA ===== */
+  .agenda-dia { background:var(--branco); border-radius:var(--radius-sm); border:1px solid var(--cinza-200); margin-bottom:8px; overflow:hidden; }
+  .agenda-dia-header { padding:10px 14px; background:var(--cinza-100); font-weight:600; font-size:13px; display:flex; justify-content:space-between; cursor:pointer; }
+  .agenda-visita { padding:10px 14px; border-top:1px solid var(--cinza-200); display:flex; align-items:center; gap:10px; font-size:13px; }
+  .agenda-visita .hora { font-family:'IBM Plex Mono'; color:var(--cinza-700); font-size:12px; width:42px; flex-shrink:0; }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar { height:8px; background:var(--cinza-200); border-radius:4px; overflow:hidden; margin-top:6px; }
+  .progress-fill { height:100%; border-radius:4px; background:var(--verde-claro); transition:width 0.4s; }
+  .progress-fill.amarelo { background:var(--amarelo); }
+  .progress-fill.vermelho { background:var(--vermelho); }
+
+  /* ===== TABS ===== */
+  .tabs { display:flex; gap:0; border-bottom:2px solid var(--cinza-200); margin-bottom:16px; }
+  .tab { padding:10px 18px; font-size:13px; font-weight:500; cursor:pointer; color:var(--cinza-700); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
+  .tab.active { color:var(--verde); border-bottom-color:var(--verde); font-weight:700; }
+  .tab:hover:not(.active) { color:var(--cinza-900); }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* ===== EXPORT ===== */
+  .export-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+  .export-card { border:2px solid var(--cinza-200); border-radius:var(--radius); padding:16px; cursor:pointer; transition:all 0.15s; text-align:center; }
+  .export-card:hover { border-color:var(--verde); background:var(--verde-fraco); }
+  .export-card .icon { font-size:28px; margin-bottom:8px; }
+  .export-card h4 { font-size:13px; font-weight:600; }
+  .export-card p { font-size:11px; color:var(--cinza-700); margin-top:4px; }
+
+  /* ===== NOTIFICAÇÕES ===== */
+  .notif { display:flex; gap:10px; padding:12px; border-radius:var(--radius-sm); margin-bottom:8px; }
+  .notif-urgente { background:var(--vermelho-fraco); border-left:4px solid var(--vermelho); }
+  .notif-atencao { background:var(--amarelo-fraco); border-left:4px solid var(--amarelo); }
+  .notif-info { background:var(--azul-claro); border-left:4px solid var(--azul); }
+  .notif-ok { background:var(--verde-fraco); border-left:4px solid var(--verde-claro); }
+  .notif-icon { font-size:16px; flex-shrink:0; }
+  .notif-text h4 { font-size:13px; font-weight:700; }
+  .notif-text p { font-size:12px; margin-top:2px; color:var(--cinza-700); }
+
+  /* ===== MICROAREA ===== */
+  .micro-map { background:var(--verde-fraco); border:2px dashed var(--verde-claro); border-radius:var(--radius); padding:20px; text-align:center; color:var(--verde); margin-bottom:16px; cursor:pointer; }
+  .micro-map:hover { background:#d4f0e2; }
+
+  /* ===== PENDENCIAS ===== */
+  .pend-item { display:flex; align-items:flex-start; gap:12px; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--cinza-200); margin-bottom:8px; background:#fff; }
+  .pend-check { width:18px; height:18px; border-radius:4px; border:2px solid var(--cinza-300); cursor:pointer; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .pend-check.done { background:var(--verde-claro); border-color:var(--verde-claro); color:#fff; }
+  .pend-text { flex:1; }
+  .pend-text h4 { font-size:13px; font-weight:600; }
+  .pend-text p { font-size:12px; color:var(--cinza-700); margin-top:2px; }
+  .pend-meta { font-size:11px; color:var(--cinza-500); margin-top:4px; font-family:'IBM Plex Mono'; }
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:768px) {
+    .sidebar { width:60px; }
+    .sidebar-logo p, .nav-item span, .acs-info, .nav-label, .nav-badge { display:none; }
+    .nav-item { justify-content:center; padding:10px; }
+    .sidebar-logo h1 { display:none; }
+    .form-grid { grid-template-columns:1fr; }
+    .form-grid.cols3 { grid-template-columns:1fr 1fr; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+  }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:960px) { .two-col { grid-template-columns:1fr; } }
+
+  /* ===== MODAL TABS ===== */
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* ===== DOMICÍLIOS POR RUA ===== */
+  .rua-group { margin-bottom:12px; }
+  .rua-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px;
+    background:var(--verde); color:#fff; border-radius:var(--radius-sm); cursor:pointer;
+    font-weight:600; font-size:13px; user-select:none; transition:background 0.15s; }
+  .rua-header:hover { background:#155a38; }
+  .rua-header .rua-stats { display:flex; gap:8px; align-items:center; }
+  .rua-body { display:none; border:1px solid var(--cinza-200); border-top:none;
+    border-radius:0 0 var(--radius-sm) var(--radius-sm); overflow:hidden; }
+  .rua-body.open { display:block; }
+  .domicilio-row { display:grid; grid-template-columns:90px 1fr 80px 70px 100px 110px auto;
+    gap:8px; align-items:start; padding:10px 14px; border-bottom:1px solid var(--cinza-100);
+    font-size:13px; transition:background 0.1s; }
+  .domicilio-row:last-child { border-bottom:none; }
+  .domicilio-row:hover { background:#f8fffe; }
+  .domicilio-row.visitado { border-left:3px solid var(--verde-claro); }
+  .domicilio-row.pendente  { border-left:3px solid var(--amarelo); }
+  .domicilio-row.atrasado  { border-left:3px solid var(--vermelho); }
+  .dom-nota-wrap { grid-column:1/-1; padding:6px 0 4px; }
+  .dom-nota { width:100%; font-size:12px; border:1px solid var(--cinza-300); border-radius:4px;
+    padding:6px 8px; font-family:'IBM Plex Sans'; color:var(--cinza-900); resize:none;
+    background:#fffde7; line-height:1.5; }
+  .dom-nota:focus { outline:none; border-color:var(--amarelo); box-shadow:0 0 0 2px rgba(249,168,37,0.2); }
+  .dom-num { font-family:'IBM Plex Mono'; font-weight:700; font-size:14px; color:var(--cinza-900); }
+  .dom-pront { font-size:11px; color:var(--cinza-500); font-family:'IBM Plex Mono'; }
+  .dom-resumo-pill { padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600;
+    display:inline-flex; align-items:center; gap:5px; }
+
+  /* ===== METAS ===== */
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-header-cell { text-align:center; font-size:11px; font-weight:700; color:var(--cinza-700);
+    padding:4px; text-transform:uppercase; }
+  .cal-cell { border-radius:var(--radius-sm); padding:8px 6px; min-height:70px;
+    font-size:12px; cursor:pointer; border:1px solid var(--cinza-200); transition:all 0.15s;
+    display:flex; flex-direction:column; gap:3px; position:relative; }
+  .cal-cell:hover { border-color:var(--verde); box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+  .cal-cell.hoje { border:2px solid var(--verde); background:var(--verde-fraco); }
+  .cal-cell.fds { background:#f9f9f9; }
+  .cal-cell.inativo { background:#f5f5f5; opacity:0.5; pointer-events:none; }
+  .cal-cell.meta-ok { background:#e8f7ef; border-color:var(--verde-claro); }
+  .cal-cell.meta-parcial { background:#fff8e1; border-color:var(--amarelo); }
+  .cal-cell.meta-zero { background:#ffebee; border-color:#ef9a9a; }
+  .cal-day-num { font-weight:700; font-size:13px; color:var(--cinza-700); }
+  .cal-cell.hoje .cal-day-num { color:var(--verde); }
+  .cal-visitas { font-size:11px; font-weight:600; }
+  .cal-meta-ind { font-size:10px; color:var(--cinza-500); }
+  .cal-turno-btns { display:flex; gap:3px; margin-top:2px; }
+  .cal-turno-btn { flex:1; padding:2px 0; font-size:10px; border:1px solid var(--cinza-300);
+    border-radius:3px; background:#fff; cursor:pointer; text-align:center; font-weight:600; }
+  .cal-turno-btn.manha { border-color:#ff9800; color:#e65100; }
+  .cal-turno-btn.tarde  { border-color:#42a5f5; color:#1565c0; }
+  .cal-turno-btn.manha.ativo { background:#ff9800; color:#fff; }
+  .cal-turno-btn.tarde.ativo  { background:#42a5f5; color:#fff; }
+  .deficit-item { display:flex; justify-content:space-between; align-items:center;
+    padding:8px 12px; background:var(--vermelho-fraco); border-radius:var(--radius-sm);
+    font-size:13px; margin-bottom:6px; border-left:3px solid var(--vermelho); }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--cinza-900); color:#fff; padding:12px 20px; border-radius:var(--radius-sm); font-size:13px; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s; box-shadow:var(--sombra-md); }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.success { background:var(--verde); }
+  .toast.error { background:var(--vermelho); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1><svg style="width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ACS Saúde</h1>
+      <p>e-SUS Atenção Básica</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-label">Principal</div>
+        <div class="nav-item active" onclick="showPage('dashboard')">
+          <span class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span><span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showPage('pendencias')">
+          <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span><span>Pendências</span>
+          <span class="nav-badge" id="badge-pend">5</span>
+        </div>
+        <div class="nav-item" onclick="showPage('agenda')">
+          <span class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span>Agenda / Visitas</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Cadastros</div>
+        <div class="nav-item" onclick="showPage('familias')">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span>Domicílios</span>
+        </div>
+        <div class="nav-item" onclick="showPage('individuos')">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span>Indivíduos</span>
+        </div>
+        <div class="nav-item" onclick="showPage('microarea')">
+          <span class="icon"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span><span>Microárea</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Saúde</div>
+        <div class="nav-item" onclick="showPage('risco')">
+          <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span><span>Estratificação de Risco</span>
+        </div>
+        <div class="nav-item" onclick="showPage('condicoes')">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span>Condições Crônicas</span>
+        </div>
+        <div class="nav-item" onclick="showPage('visitas')">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span><span>Fichas de Visita</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Produção</div>
+        <div class="nav-item" onclick="showPage('metas')">
+          <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span>Metas</span>
+        </div>
+        <div class="nav-item" onclick="showPage('producao')">
+          <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Produção Mensal</span>
+        </div>
+        <div class="nav-item" onclick="showPage('exportar')">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span>Exportar Dados</span>
+        </div>
+        <div class="nav-item" onclick="showPage('relatorios')">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></span><span>Relatórios</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Sistema</div>
+        <div class="nav-item" onclick="showPage('configuracoes')">
+          <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Configurações</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="acs-profile">
+        <div class="acs-avatar"><svg style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="acs-info">
+          <h3 id="acs-nome">Maria Silva</h3>
+          <p id="acs-area">Microárea 003 · ESF Boa Vista</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="data-hoje"></span>
+        <button class="btn btn-primary" id="btn-top-action" onclick="openNovaFamilia()">+ Nova Família</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ========== DASHBOARD ========== -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="s-familias">0</div>
+            <div class="stat-label">Famílias Cadastradas</div>
+            <div class="stat-sub">Meta: 250</div>
+          </div>
+          <div class="stat-card azul">
+            <div class="stat-number" id="s-individuos">0</div>
+            <div class="stat-label">Indivíduos</div>
+            <div class="stat-sub">Cadastros ativos</div>
+          </div>
+          <div class="stat-card amarelo">
+            <div class="stat-number" id="s-visitas-mes">0</div>
+            <div class="stat-label">Visitas no Mês</div>
+            <div class="stat-sub" id="s-meta-visitas">Meta: 90%</div>
+          </div>
+          <div class="stat-card vermelho">
+            <div class="stat-number" id="s-alto-risco">0</div>
+            <div class="stat-label">Alto Risco</div>
+            <div class="stat-sub">Requerem atenção</div>
+          </div>
+          <div class="stat-card laranja">
+            <div class="stat-number" id="s-pendencias">0</div>
+            <div class="stat-label">Pendências</div>
+            <div class="stat-sub">Abertas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="s-cobertura">0%</div>
+            <div class="stat-label">Cobertura Vacinal</div>
+            <div class="stat-sub">Crianças &lt;5 anos</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-title"><span class="icon"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--vermelho);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>Alertas e Notificações</div>
+              <div id="alertas-list"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><span class="icon"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--verde);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Próximas Visitas (hoje)</div>
+              <div id="visitas-hoje"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title"><span class="icon"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--verde);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Estratificação de Risco</div>
+              <div style="display:flex;flex-direction:column;gap:10px;" id="risco-dash"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><span class="icon"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--verde);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Meta de Visitas — <span id="mes-atual"></span></div>
+              <div id="metas-dash"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== DOMICÍLIOS ========== -->
+      <div id="page-familias" class="page">
+        <!-- filtros globais -->
+        <div class="search-bar" style="flex-wrap:wrap;gap:8px">
+          <input class="input input-lg" type="text" placeholder="Buscar por rua, responsável, prontuário..." id="search-domicilio" oninput="renderFamilias()">
+          <select class="input" id="filter-cond-fam" onchange="renderFamilias()">
+            <option value="">Todas as condições</option>
+            <option value="has">Hipertensão</option>
+            <option value="dm">Diabetes</option>
+            <option value="gestante">Gestante</option>
+            <option value="papa-ok">Papanicolau &lt; 1 ano</option>
+            <option value="papa-atrasado">Papanicolau &gt; 1 ano</option>
+            <option value="mamo-ok">Mamografia &lt; 2 anos</option>
+            <option value="mamo-atrasada">Mamografia &gt; 2 anos</option>
+          </select>
+          <select class="input" id="filter-ficha-fam" onchange="renderFamilias()">
+            <option value="">Fichas</option>
+            <option value="vacinas-atrasadas" disabled>Vacinas Atrasadas</option>
+            <option value="hanseniase" disabled>Avaliação Hanseníase</option>
+            <option value="consumo-alimentar" disabled>Consumo Alimentar</option>
+            <option value="avaliacao-diabeticos" disabled>Avaliação Diabéticos</option>
+          </select>
+          <select class="input" id="filter-visita-fam" onchange="renderFamilias()">
+            <option value="">Todas situações</option>
+            <option value="sem-visita">Visita pendente</option>
+            <option value="visitado">Visitado este mês</option>
+          </select>
+          <select class="input" id="filter-ordem-fam" onchange="renderFamilias()">
+            <option value="rua">Ordenar por rua</option>
+            <option value="numero-asc">Número crescente</option>
+            <option value="numero-desc">Número decrescente</option>
+            <option value="prontuario">Prontuário</option>
+            <option value="risco">Risco (alto primeiro)</option>
+          </select>
+        </div>
+
+        <!-- resumo rápido -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px" id="dom-resumo-bar"></div>
+
+        <!-- lista agrupada por rua -->
+        <div id="lista-ruas"></div>
+      </div>
+
+      <!-- ========== INDIVÍDUOS ========== -->
+      <div id="page-individuos" class="page">
+        <div class="notif notif-info" style="margin-bottom:12px">
+          <div class="notif-icon" style="font-size:16px">i</div>
+          <div class="notif-text"><h4>Cadastro por Domicílio</h4>
+          <p>Para cadastrar um indivíduo, acesse o domicílio correspondente em <strong>Domicílios</strong> e clique em "Membro". Isso garante o vínculo correto.</p></div>
+        </div>
+        <div class="search-bar">
+          <input class="input input-lg" type="text" placeholder="Buscar por nome, CPF, CNS..." id="search-individuo" oninput="renderIndividuos()">
+          <select class="input" id="filter-cond" onchange="renderIndividuos()">
+            <option value="">Todas condições</option>
+            <option value="hta">HAS</option><option value="dm">DM</option>
+            <option value="gestante">Gestante</option>
+            <option value="crianca">Criança &lt;2 anos</option>
+            <option value="idoso">Idoso ≥60 anos</option>
+            <option value="deficiencia">Deficiência</option>
+            <option value="saude-mental">Saúde Mental</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>CNS / CPF</th><th>Nome Completo</th><th>Idade</th><th>Sexo</th>
+                <th>Domicílio</th><th>Condições</th><th>Medicações</th><th>Risco</th><th>Ações</th>
+              </tr></thead>
+              <tbody id="tabela-individuos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PENDÊNCIAS ========== -->
+      <div id="page-pendencias" class="page">
+        <div class="search-bar">
+          <select class="input" id="filter-pend-tipo" onchange="renderPendencias()">
+            <option value="">Todos tipos</option>
+            <option value="visita">Visita atrasada</option>
+            <option value="cadastro">Cadastro incompleto</option>
+            <option value="vacina">Vacina pendente</option>
+            <option value="encaminhamento">Encaminhamento</option>
+            <option value="exame">Exame solicitado</option>
+            <option value="retorno">Retorno agendado</option>
+          </select>
+          <select class="input" id="filter-pend-prio" onchange="renderPendencias()">
+            <option value="">Todas prioridades</option>
+            <option value="urgente">Urgente</option>
+            <option value="alta">Alta</option>
+            <option value="media">Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+          <button class="btn btn-primary" onclick="openNovaPendencia()">+ Nova Pendência</button>
+        </div>
+        <div id="lista-pendencias"></div>
+      </div>
+
+      <!-- ========== AGENDA ========== -->
+      <div id="page-agenda" class="page">
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-title">Planejar Visita</div>
+              <div class="form-grid col1" style="gap:10px">
+                <div class="form-group">
+                  <label>Data da Visita</label>
+                  <input class="input" type="date" id="agenda-data">
+                </div>
+                <div class="form-group">
+                  <label>Família</label>
+                  <select class="input" id="agenda-familia">
+                    <option value="">Selecione a família...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Tipo de Visita</label>
+                  <select class="input" id="agenda-tipo">
+                    <option>Visita de rotina</option>
+                    <option>Acompanhamento de crônico</option>
+                    <option>Gestante</option>
+                    <option>Criança menor de 5 anos</option>
+                    <option>Idoso</option>
+                    <option>Saúde mental</option>
+                    <option>Alto risco</option>
+                    <option>Cadastramento</option>
+                    <option>Busca ativa</option>
+                    <option>Visita emergencial</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Observações</label>
+                  <input class="input" type="text" id="agenda-obs" placeholder="Observações...">
+                </div>
+                <button class="btn btn-primary" onclick="agendarVisita()">Agendar</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title">Visitas Programadas</div>
+              <div id="lista-agenda"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== MICROÁREA ========== -->
+      <div id="page-microarea" class="page">
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-title">Dados da Microárea</div>
+              <div class="form-grid" style="gap:10px">
+                <div class="form-group">
+                  <label>Nome da Microárea</label>
+                  <input class="input" id="micro-nome" placeholder="Ex: Microárea 003">
+                </div>
+                <div class="form-group">
+                  <label>ESF / UBS</label>
+                  <input class="input" id="micro-esf" placeholder="Nome da equipe">
+                </div>
+                <div class="form-group">
+                  <label>Bairro</label>
+                  <input class="input" id="micro-bairro" placeholder="Bairro">
+                </div>
+                <div class="form-group">
+                  <label>Município / UF</label>
+                  <input class="input" id="micro-municipio" placeholder="Município">
+                </div>
+                <div class="form-group span2">
+                  <label>Ruas da Microárea</label>
+                  <input class="input" id="micro-ruas" placeholder="Rua A, Rua B, Rua C...">
+                </div>
+                <div class="form-group">
+                  <label>Código IBGE</label>
+                  <input class="input" id="micro-ibge" placeholder="0000000">
+                </div>
+                <div class="form-group">
+                  <label>CNES da UBS</label>
+                  <input class="input" id="micro-cnes" placeholder="0000000">
+                </div>
+                <div class="form-group span2">
+                  <button class="btn btn-primary" onclick="salvarMicroarea()">Salvar Dados</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title">Resumo Territorial</div>
+              <div id="micro-resumo"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Logradouros Cadastrados</div>
+              <div id="micro-ruas-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ESTRATIFICAÇÃO DE RISCO ========== -->
+      <div id="page-risco" class="page">
+        <div class="card">
+          <div class="card-title">Estratificação de Risco - Modelo e-SUS</div>
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'tab-risco-lista')">Lista Geral</div>
+            <div class="tab" onclick="switchTab(this,'tab-risco-criterios')">Critérios de Classificação</div>
+            <div class="tab" onclick="switchTab(this,'tab-risco-graficos')">Análise Visual</div>
+          </div>
+          <div class="tab-content active" id="tab-risco-lista">
+            <div class="search-bar">
+              <input class="input input-lg" type="text" placeholder="Buscar família..." id="search-risco" oninput="renderRisco()">
+              <select class="input" id="filter-risco-cat" onchange="renderRisco()">
+                <option value="">Todos</option>
+                <option value="alto">Alto risco</option>
+                <option value="medio">Médio risco</option>
+                <option value="baixo">Baixo risco</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>Família</th><th>Classificação</th><th>Pontuação</th><th>Fatores de Risco</th><th>Última Avaliação</th><th>Ações</th>
+                </tr></thead>
+                <tbody id="tabela-risco"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tab-content" id="tab-risco-criterios">
+            <div style="display:grid;gap:12px">
+              <div class="notif notif-urgente">
+                <div class="notif-icon"><span style="display:inline-block;width:14px;height:14px;background:var(--vermelho);border-radius:50%;vertical-align:middle"></span></div>
+                <div class="notif-text">
+                  <h4>Alto Risco (≥3 fatores ou fator crítico)</h4>
+                  <p>Internação hospitalar recente · Doença crônica descompensada · Gestante de alto risco · Deficiência grave · Situação de rua · Violência doméstica · Uso abusivo de substâncias · Saúde mental grave · TB/Hanseníase ativa · Criança em situação de vulnerabilidade</p>
+                </div>
+              </div>
+              <div class="notif notif-atencao">
+                <div class="notif-icon"><span style="display:inline-block;width:14px;height:14px;background:var(--amarelo);border-radius:50%;vertical-align:middle"></span></div>
+                <div class="notif-text">
+                  <h4>Médio Risco (1-2 fatores)</h4>
+                  <p>DM ou HAS compensada · Idoso frágil · Gestante normal · Criança &lt;2 anos · Obesidade grau II+ · Doença respiratória crônica · Ex-fumante · Histórico familiar de doenças cardiovasculares</p>
+                </div>
+              </div>
+              <div class="notif notif-ok">
+                <div class="notif-icon"><span style="display:inline-block;width:14px;height:14px;background:var(--verde-claro);border-radius:50%;vertical-align:middle"></span></div>
+                <div class="notif-text">
+                  <h4>Baixo Risco (sem fatores)</h4>
+                  <p>Família sem condições de risco ativas · Adultos saudáveis · Crianças com desenvolvimento normal · Vacinação em dia · Condições socioeconômicas estáveis</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-content" id="tab-risco-graficos">
+            <div id="graficos-risco" style="display:grid;gap:16px;grid-template-columns:1fr 1fr"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== CONDIÇÕES CRÔNICAS ========== -->
+      <div id="page-condicoes" class="page">
+        <div class="card">
+          <div class="card-title">Monitoramento de Condições Crônicas</div>
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'tab-has')">HAS</div>
+            <div class="tab" onclick="switchTab(this,'tab-dm')">DM</div>
+            <div class="tab" onclick="switchTab(this,'tab-gestante')">Gestantes</div>
+            <div class="tab" onclick="switchTab(this,'tab-crianca')">Crianças &lt;5</div>
+            <div class="tab" onclick="switchTab(this,'tab-idoso')">Idosos</div>
+            <div class="tab" onclick="switchTab(this,'tab-mental')">Saúde Mental</div>
+          </div>
+          <div class="tab-content active" id="tab-has">
+            <div class="search-bar" style="margin-bottom:12px">
+              <span style="font-size:13px;color:var(--cinza-700);align-self:center">Portadores de Hipertensão Arterial (HAS)</span>
+            </div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Última PA</th><th>Medicação</th><th>Controle</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-has-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-dm">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Última Glicemia</th><th>Medicação</th><th>Controle</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-dm-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-gestante">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>IG</th><th>DPP</th><th>Risco</th><th>Consultas Pré-natal</th></tr></thead>
+              <tbody id="tab-gestante-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-crianca">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Criança</th><th>Idade</th><th>Vacinação</th><th>Aleitamento</th><th>Desenvolvimento</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-crianca-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-idoso">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Comorbidades</th><th>Mobilidade</th><th>Cuidador</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-idoso-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-mental">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Diagnóstico</th><th>Acompanhamento</th><th>Medicação</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-mental-body"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== FICHAS DE VISITA ========== -->
+      <div id="page-visitas" class="page">
+        <div class="notif notif-info" style="margin-bottom:12px">
+          <div class="notif-icon" style="font-size:16px">i</div>
+          <div class="notif-text"><h4>Registro de Visitas</h4><p>Registre visitas acessando o domicílio em <strong>Domicílios</strong> e clicando em "Visita". Aqui é o histórico completo.</p></div>
+        </div>
+        <div class="search-bar">
+          <input class="input input-lg" type="text" placeholder="Buscar por domicílio ou data..." id="search-visita" oninput="renderVisitas()">
+          <select class="input" id="filter-visita-tipo" onchange="renderVisitas()">
+            <option value="">Todos tipos</option>
+            <option value="rotina">Rotina</option>
+            <option value="cronico">Crônico</option>
+            <option value="gestante">Gestante</option>
+            <option value="crianca">Criança</option>
+            <option value="busca-ativa">Busca ativa</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Data</th><th>Família</th><th>Tipo</th><th>Desfecho</th><th>Observações</th><th>CBO</th>
+              </tr></thead>
+              <tbody id="tabela-visitas"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PRODUÇÃO MENSAL ========== -->
+      <div id="page-producao" class="page">
+
+        <!-- Resumo rápido top -->
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-number" id="prod-visitas">0</div>
+            <div class="stat-label">Visitas no Mês</div>
+            <div class="progress-bar"><div class="progress-fill" id="pb-visitas" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card azul">
+            <div class="stat-number" id="prod-cadastros">0</div>
+            <div class="stat-label">Cadastros Novos</div>
+            <div class="progress-bar"><div class="progress-fill" id="pb-cadastros" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card amarelo">
+            <div class="stat-number" id="prod-atividades">0</div>
+            <div class="stat-label">Ações Educativas</div>
+            <div class="progress-bar"><div class="progress-fill amarelo" id="pb-atividades" style="width:0%"></div></div>
+          </div>
+          <div class="stat-card laranja">
+            <div class="stat-number" id="prod-encam">0</div>
+            <div class="stat-label">Encaminhamentos</div>
+          </div>
+        </div>
+
+        <!-- ACOMPANHAMENTO — cards circulares -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cinza-500)">ACOMPANHAMENTO — Cobertura do mês</div>
+            <div style="font-size:12px;color:var(--cinza-700)" id="prod-mes-label"></div>
+          </div>
+          <div id="acomp-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:20px;justify-items:center;padding-bottom:8px"></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Detalhamento por Tipo de Visita</div>
+            <div id="prod-detalhe"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Histórico Mensal</div>
+            <div id="prod-historico"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== METAS ========== -->
+      <div id="page-metas" class="page">
+        <div class="two-col" style="margin-bottom:16px">
+          <!-- Config de metas -->
+          <div class="card">
+            <div class="card-title">Configurar Metas de Visitas</div>
+            <div style="display:grid;gap:10px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="form-group">
+                  <label>Visitas por turno — Manhã</label>
+                  <input class="input" type="number" id="meta-manha" min="1" max="30" value="5" oninput="salvarMetas();renderMetas()">
+                </div>
+                <div class="form-group">
+                  <label>Visitas por turno — Tarde</label>
+                  <input class="input" type="number" id="meta-tarde" min="1" max="30" value="5" oninput="salvarMetas();renderMetas()">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Incluir sábados nas metas?</label>
+                <select class="input" id="meta-sabado" onchange="salvarMetas();renderMetas()">
+                  <option value="nao">Não (só dias úteis)</option>
+                  <option value="sim">Sim</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Incluir domingos nas metas?</label>
+                <select class="input" id="meta-domingo" onchange="salvarMetas();renderMetas()">
+                  <option value="nao">Não</option>
+                  <option value="sim">Sim</option>
+                </select>
+              </div>
+              <div style="padding:12px;background:var(--verde-fraco);border-radius:var(--radius-sm);font-size:13px">
+                <strong>Meta mensal calculada:</strong> <span id="meta-calc" style="color:var(--verde);font-size:16px;font-weight:700"></span> visitas
+                <div style="color:var(--cinza-700);margin-top:4px" id="meta-calc-desc"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Resumo do mês -->
+          <div class="card">
+            <div class="card-title">Resumo — <span id="metas-mes-label"></span></div>
+            <div id="metas-resumo"></div>
+          </div>
+        </div>
+
+        <!-- Calendário de visitas do mês -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div class="card-title" style="margin:0">Calendário de Visitas Diárias</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-secondary btn-sm" onclick="metasMesOffset--;renderMetas()">&#8592;</button>
+              <span id="metas-nav-label" style="font-size:13px;font-weight:600;min-width:120px;text-align:center"></span>
+              <button class="btn btn-secondary btn-sm" onclick="metasMesOffset++;renderMetas()">&#8594;</button>
+            </div>
+          </div>
+          <div id="metas-calendario"></div>
+        </div>
+
+        <!-- Alerta de déficit -->
+        <div id="metas-alerta"></div>
+      </div>
+
+      <!-- ========== EXPORTAR ========== -->
+      <div id="page-exportar" class="page">
+        <div class="card">
+          <div class="card-title">Exportação de Dados Estratificados</div>
+          <p style="font-size:13px;color:var(--cinza-700);margin-bottom:16px">Exporte seus dados em diferentes formatos compatíveis com o e-SUS e sistemas DATASUS.</p>
+          <div class="export-grid">
+            <div class="export-card" onclick="exportarDados('familias-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--verde);font-family:IBM Plex Mono">CSV</div>
+              <h4>Famílias — CSV</h4>
+              <p>Todos cadastros de famílias com endereços e membros</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('individuos-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--azul);font-family:IBM Plex Mono">IND</div>
+              <h4>Indivíduos — CSV</h4>
+              <p>Base completa com CNS, CPF e condições de saúde</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('visitas-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--cinza-700);font-family:IBM Plex Mono">FIC</div>
+              <h4>Fichas de Visita — CSV</h4>
+              <p>Histórico de visitas domiciliares para importação</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('risco-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--vermelho);font-family:IBM Plex Mono">RSC</div>
+              <h4>Estratificação de Risco</h4>
+              <p>Listagem estratificada por nível de risco familiar</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('cronicos-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--laranja);font-family:IBM Plex Mono">CRN</div>
+              <h4>Condições Crônicas</h4>
+              <p>HAS, DM, gestantes e outros acompanhamentos</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('producao-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--verde);font-family:IBM Plex Mono">PRD</div>
+              <h4>Produção Mensal — CSV</h4>
+              <p>Compatível com BPA e SIAB/e-SUS</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('pendencias-csv')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--amarelo);font-family:IBM Plex Mono">PND</div>
+              <h4>Pendências</h4>
+              <p>Lista de pendências abertas e resolvidas</p>
+            </div>
+            <div class="export-card" onclick="exportarDados('json-backup')">
+              <div class="icon" style="font-size:24px;font-weight:800;color:var(--cinza-700);font-family:IBM Plex Mono">BAK</div>
+              <h4>Backup Completo — JSON</h4>
+              <p>Backup total do sistema para restauração</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Importar Backup</div>
+          <p style="font-size:13px;color:var(--cinza-700);margin-bottom:12px">Restaure um backup JSON previamente exportado.</p>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importarBackup(this)">
+          <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Selecionar arquivo JSON</button>
+        </div>
+      </div>
+
+      <!-- ========== RELATÓRIOS ========== -->
+      <div id="page-relatorios" class="page">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Relatório de Cobertura</div>
+            <div id="rel-cobertura"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Relatório de Vulnerabilidade Social</div>
+            <div id="rel-vulnerabilidade"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Relatório de Condições de Saúde</div>
+          <div id="rel-condicoes"></div>
+        </div>
+      </div>
+
+      <!-- ========== CONFIGURAÇÕES ========== -->
+      <div id="page-configuracoes" class="page">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Dados do ACS</div>
+            <div class="form-grid col1" style="gap:10px">
+              <div class="form-group"><label>Nome Completo</label><input class="input" id="cfg-nome" placeholder="Seu nome completo"></div>
+              <div class="form-group"><label>CPF</label><input class="input" id="cfg-cpf" placeholder="000.000.000-00"></div>
+              <div class="form-group"><label>CNS do ACS</label><input class="input" id="cfg-cns" placeholder="000 0000 0000 0000"></div>
+              <div class="form-group"><label>CBO</label><input class="input" id="cfg-cbo" value="515105" placeholder="515105 - ACS"></div>
+              <div class="form-group"><label>Nome da ESF/UBS</label><input class="input" id="cfg-esf" placeholder="ESF / UBS"></div>
+              <div class="form-group"><label>Microárea</label><input class="input" id="cfg-microarea" placeholder="Ex: 003"></div>
+              <div class="form-group"><label>Município</label><input class="input" id="cfg-municipio" placeholder="Município"></div>
+              <div class="form-group"><label>CNES</label><input class="input" id="cfg-cnes" placeholder="0000000"></div>
+              <div class="form-group"><label>INE da Equipe</label><input class="input" id="cfg-ine" placeholder="0000000000"></div>
+              <button class="btn btn-primary" onclick="salvarConfig()">Salvar Configurações</button>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title">Gerenciar Dados</div>
+              <p style="font-size:13px;color:var(--cinza-700);margin-bottom:16px">Use com cautela. Estas ações são irreversíveis.</p>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-secondary" onclick="if(confirm('Limpar TODAS as visitas?')) { db.visitas=[]; save(); renderVisitas(); toast('Visitas apagadas','success'); }">Limpar Fichas de Visita</button>
+                <button class="btn btn-danger" onclick="if(confirm('APAGAR TODOS OS DADOS? Isso não pode ser desfeito.')) { limparTudo(); }">Apagar Todos os Dados</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Sobre o Sistema</div>
+              <p style="font-size:13px;color:var(--cinza-700);line-height:1.6">
+                <strong>ACS Saúde v2.0</strong><br>
+                Sistema de apoio ao Agente Comunitário de Saúde<br>
+                Baseado no modelo e-SUS Atenção Básica (RNDS/DATASUS)<br><br>
+                Todos os dados são armazenados localmente no dispositivo (localStorage).<br>
+                Nenhum dado é enviado para servidores externos.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ===== MODAIS ===== -->
+
+<!-- Modal Nova Família -->
+<div class="modal-overlay" id="modal-familia">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-familia-titulo">Nova Família</h2>
+      <button class="close-btn" onclick="closeModal('modal-familia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="section-divider">Identificação</div>
+        <div class="form-group"><label>Prontuário Familiar</label><input class="input" id="fam-prontuario" placeholder="Gerado automaticamente"></div>
+        <div class="form-group"><label>Nome do Responsável *</label><input class="input" id="fam-responsavel" required placeholder="Nome completo"></div>
+        <div class="form-group"><label>CPF do Responsável</label><input class="input" id="fam-cpf" placeholder="000.000.000-00"></div>
+        <div class="form-group"><label>CNS do Responsável</label><input class="input" id="fam-cns" placeholder="000 0000 0000 0000"></div>
+        <div class="form-group"><label>Data de Nascimento</label><input class="input" type="date" id="fam-nasc-resp"></div>
+        <div class="form-group"><label>Nº de Membros</label><input class="input" type="number" id="fam-membros" value="1" min="1" max="20"></div>
+
+        <div class="section-divider"> Endereço</div>
+        <div class="form-group span2"><label>Logradouro *</label><input class="input" id="fam-logradouro" placeholder="Rua, Avenida, Travessa..."></div>
+        <div class="form-group"><label>Número</label><input class="input" id="fam-numero" placeholder="123"></div>
+        <div class="form-group"><label>Complemento</label><input class="input" id="fam-complemento" placeholder="Apto, fundos..."></div>
+        <div class="form-group"><label>Bairro</label><input class="input" id="fam-bairro" placeholder="Bairro"></div>
+        <div class="form-group"><label>CEP</label><input class="input" id="fam-cep" placeholder="00000-000"></div>
+        <div class="form-group"><label>Ponto de Referência</label><input class="input" id="fam-referencia" placeholder="Próximo a..."></div>
+        <div class="form-group"><label>Tipo de Imóvel</label>
+          <select class="input" id="fam-tipo-imovel">
+            <option>Domicílio</option><option>Comércio</option><option>Terreno baldio</option><option>Ponto estratégico</option>
+          </select>
+        </div>
+
+        <div class="section-divider">Condições de Moradia</div>
+        <div class="form-group"><label>Tipo de Domicílio</label>
+          <select class="input" id="fam-tipo-dom">
+            <option>Casa</option><option>Apartamento</option><option>Cômodo/kitnet</option><option>Cortiço</option><option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Material Predominante</label>
+          <select class="input" id="fam-material">
+            <option>Tijolo/alvenaria</option><option>Madeira</option><option>Taipa</option><option>Material aproveitado</option><option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Abastecimento de Água</label>
+          <select class="input" id="fam-agua">
+            <option>Rede pública</option><option>Poço/nascente</option><option>Cisternas</option><option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Esgoto Sanitário</label>
+          <select class="input" id="fam-esgoto">
+            <option>Rede pública</option><option>Fossa séptica</option><option>Fossa rudimentar</option><option>Direto para rios</option><option>Céu aberto</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Coleta de Lixo</label>
+          <select class="input" id="fam-lixo">
+            <option>Coletado</option><option>Queimado</option><option>Jogado no terreno</option><option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Energia Elétrica</label>
+          <select class="input" id="fam-energia">
+            <option>Com energia elétrica</option><option>Sem energia elétrica</option>
+          </select>
+        </div>
+
+        <div class="section-divider">Classificação</div>
+        <div class="form-group"><label>Risco Familiar</label>
+          <select class="input" id="fam-risco">
+            <option value="baixo">Baixo risco</option>
+            <option value="medio">Médio risco</option>
+            <option value="alto">Alto risco</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Situação de Vulnerabilidade</label>
+          <select class="input" id="fam-vulnerabilidade">
+            <option value="nao">Não</option>
+            <option value="sim">Sim</option>
+          </select>
+        </div>
+        <div class="form-group span2"><label>Observações</label><input class="input" id="fam-obs" placeholder="Observações relevantes..."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-familia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarFamilia()">Salvar Família</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Novo Indivíduo -->
+<div class="modal-overlay" id="modal-individuo">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <h2><span id="modal-ind-titulo">Cadastrar Membro —</span> <span id="modal-ind-familia-nome" style="color:var(--verde)"></span></h2>
+      <button class="close-btn" onclick="closeModal('modal-individuo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- TABS do modal -->
+      <div class="tabs" style="margin-bottom:16px">
+        <div class="tab active" onclick="switchTab(this,'ind-tab-dados')">Dados Pessoais</div>
+        <div class="tab" onclick="switchTab(this,'ind-tab-saude')">Condições de Saúde</div>
+        <div class="tab" onclick="switchTab(this,'ind-tab-med')">Medicações</div>
+        <div class="tab" onclick="switchTab(this,'ind-tab-vacina')">Vacinas</div>
+      </div>
+
+      <!-- TAB: DADOS -->
+      <div class="tab-content active" id="ind-tab-dados">
+        <div class="form-grid">
+          <input type="hidden" id="ind-familia-id">
+          <div class="form-group span2"><label>Nome Completo *</label><input class="input" id="ind-nome" placeholder="Nome completo do cidadão"></div>
+          <div class="form-group"><label>Nome Social</label><input class="input" id="ind-nome-social" placeholder="Se aplicável"></div>
+          <div class="form-group"><label>Nome da Mãe</label><input class="input" id="ind-mae" placeholder="Nome da mãe"></div>
+          <div class="form-group"><label>Data de Nascimento *</label><input class="input" type="date" id="ind-nasc" onchange="atualizarVacinasPorIdade()"></div>
+          <div class="form-group"><label>Sexo</label>
+            <select class="input" id="ind-sexo"><option value="F">Feminino</option><option value="M">Masculino</option></select>
+          </div>
+          <div class="form-group"><label>Raça/Cor</label>
+            <select class="input" id="ind-raca"><option>Branca</option><option>Preta</option><option>Amarela</option><option>Parda</option><option>Indígena</option></select>
+          </div>
+          <div class="form-group"><label>Nacionalidade</label>
+            <select class="input" id="ind-nacional"><option>Brasileira</option><option>Estrangeira</option></select>
+          </div>
+          <div class="form-group"><label>CPF</label><input class="input" id="ind-cpf" placeholder="000.000.000-00"></div>
+          <div class="form-group"><label>CNS</label><input class="input" id="ind-cns" placeholder="000 0000 0000 0000"></div>
+          <div class="form-group"><label>Escolaridade</label>
+            <select class="input" id="ind-escolaridade">
+              <option>Sem escolaridade</option><option>Fundamental incompleto</option><option>Fundamental completo</option>
+              <option>Médio incompleto</option><option>Médio completo</option><option>Superior</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Situação de Trabalho</label>
+            <select class="input" id="ind-trabalho">
+              <option>Empregado CLT</option><option>Autônomo</option><option>Desempregado</option>
+              <option>Aposentado</option><option>Estudante</option><option>Do lar</option><option>Não se aplica</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SAÚDE -->
+      <div class="tab-content" id="ind-tab-saude">
+        <div class="form-grid">
+          <div class="form-group"><label>HAS (Hipertensão)</label>
+            <select class="input" id="ind-has"><option value="nao">Não</option><option value="sim">Sim</option></select>
+          </div>
+          <div class="form-group"><label>DM (Diabetes)</label>
+            <select class="input" id="ind-dm"><option value="nao">Não</option><option value="sim">Sim</option></select>
+          </div>
+          <div class="form-group"><label>Gestante</label>
+            <select class="input" id="ind-gestante"><option value="nao">Não</option><option value="sim">Sim</option></select>
+          </div>
+          <div class="form-group"><label>Deficiência</label>
+            <select class="input" id="ind-deficiencia">
+              <option value="nao">Nenhuma</option><option value="fisica">Física</option><option value="intelectual">Intelectual</option>
+              <option value="visual">Visual</option><option value="auditiva">Auditiva</option><option value="multipla">Múltipla</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Saúde Mental</label>
+            <select class="input" id="ind-mental"><option value="nao">Não</option><option value="sim">Sim</option></select>
+          </div>
+          <div class="form-group"><label>TB / Hanseníase</label>
+            <select class="input" id="ind-tb"><option value="nao">Não</option><option value="tb">Tuberculose</option><option value="hanseniase">Hanseníase</option></select>
+          </div>
+          <div class="form-group"><label>Câncer</label>
+            <select class="input" id="ind-cancer"><option value="nao">Não</option><option value="sim">Sim</option></select>
+          </div>
+          <div class="form-group"><label>Acamado / Dependente</label>
+            <select class="input" id="ind-acamado"><option value="nao">Não</option><option value="sim">Sim</option></select>
+          </div>
+          <div class="form-group span2"><label>Outras Condições</label>
+            <input class="input" id="ind-outras" placeholder="Epilepsia, IRC, DST/IST, DPOC, etc...">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MEDICAÇÕES -->
+      <div class="tab-content" id="ind-tab-med">
+        <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--cinza-700)">Lista de medicamentos em uso contínuo (princípios ativos)</span>
+          <button class="btn btn-primary btn-sm" onclick="adicionarMedicacao()">+ Adicionar</button>
+        </div>
+        <div id="lista-medicacoes" style="display:grid;gap:8px"></div>
+        <div style="margin-top:12px;padding:10px;background:var(--cinza-100);border-radius:var(--radius-sm);font-size:12px;color:var(--cinza-700)">
+          <strong>Medicamentos comuns:</strong> Losartana, Hidroclorotiazida, Enalapril, Anlodipino, Metformina, Glibenclamida, Insulina NPH, Atorvastatina, AAS, Omeprazol, Levotiroxina, Amitriptilina, Fluoxetina, Haloperidol, Clonazepam
+        </div>
+      </div>
+
+      <!-- TAB: VACINAS (Calendário Nacional Infantil) -->
+      <div class="tab-content" id="ind-tab-vacina">
+        <div style="margin-bottom:12px;font-size:13px;color:var(--cinza-700)" id="vacina-idade-info"></div>
+        <div id="calendario-vacina" style="display:grid;gap:6px"></div>
+        <div style="margin-top:10px;display:flex;gap:12px;font-size:12px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:var(--verde-claro);border-radius:2px;display:inline-block"></span>Aplicada</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:var(--vermelho-fraco);border:1px solid var(--vermelho);border-radius:2px;display:inline-block"></span>Pendente/Atrasada</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:var(--cinza-200);border-radius:2px;display:inline-block"></span>Ainda não aplicável</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-individuo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarIndividuo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ficha de Visita -->
+<div class="modal-overlay" id="modal-visita">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h2 id="modal-vis-titulo">Registrar Visita</h2>
+      <button class="close-btn" onclick="closeModal('modal-visita')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Data da Visita *</label><input class="input" type="date" id="vis-data"></div>
+        <div class="form-group"><label>Turno</label>
+          <select class="input" id="vis-turno">
+            <option value="manha">Manhã</option><option value="tarde">Tarde</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Domicílio *</label>
+          <select class="input" id="vis-familia" onchange="renderMembrosList()"></select>
+        </div>
+
+        <!-- Tipo de visita: família ou indivíduo -->
+        <div class="form-group span2">
+          <label>Escopo da Visita</label>
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer">
+              <input type="radio" name="vis-escopo" value="familia" checked onchange="toggleVisitaEscopo()"> Visita ao domicílio (conta para metas)
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer">
+              <input type="radio" name="vis-escopo" value="individuo" onchange="toggleVisitaEscopo()"> Acompanhamento individual
+            </label>
+          </div>
+        </div>
+
+        <!-- Seleção de membro (só aparece no escopo individuo) -->
+        <div class="form-group span2" id="vis-membro-wrap" style="display:none">
+          <label>Membro Atendido</label>
+          <select class="input" id="vis-membro"></select>
+        </div>
+
+        <div class="form-group"><label>Tipo de Visita</label>
+          <select class="input" id="vis-tipo">
+            <option>Visita de rotina</option><option>Acompanhamento de crônico</option><option>Gestante</option>
+            <option>Criança</option><option>Idoso</option><option>Saúde mental</option>
+            <option>Alto risco</option><option>Cadastramento</option><option>Busca ativa</option><option>Emergencial</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Desfecho</label>
+          <select class="input" id="vis-desfecho">
+            <option>Visita realizada</option><option>Ausente</option><option>Recusou</option><option>Mudou-se</option><option>Óbito</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Vacinação em dia?</label>
+          <select class="input" id="vis-vacina"><option value="nao-avaliado">Não avaliado</option><option value="sim">Sim</option><option value="nao">Não</option><option value="pendente">Pendente</option></select>
+        </div>
+        <div class="form-group"><label>Encaminhamento?</label>
+          <select class="input" id="vis-encam"><option value="nao">Não</option><option value="sim">Sim</option></select>
+        </div>
+        <div class="form-group span2">
+          <label>Observações</label>
+          <textarea class="input" id="vis-obs" rows="3" style="resize:vertical" placeholder="Orientações, condições encontradas..."></textarea>
+        </div>
+        <div class="form-group span2">
+          <label>Pendência gerada?</label>
+          <input class="input" id="vis-pendencia" placeholder="Descreva se houver nova pendência...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-visita')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarVisita()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Pendência -->
+<div class="modal-overlay" id="modal-pendencia">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h2>Nova Pendência</h2>
+      <button class="close-btn" onclick="closeModal('modal-pendencia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid col1" style="gap:10px">
+        <div class="form-group"><label>Título / Descrição *</label><input class="input" id="pend-titulo" placeholder="Ex: Realizar visita à família Santos"></div>
+        <div class="form-group"><label>Tipo</label>
+          <select class="input" id="pend-tipo">
+            <option value="visita">Visita atrasada</option><option value="cadastro">Cadastro incompleto</option>
+            <option value="vacina">Vacina pendente</option><option value="encaminhamento">Encaminhamento</option>
+            <option value="exame">Exame solicitado</option><option value="retorno">Retorno agendado</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Prioridade</label>
+          <select class="input" id="pend-prioridade">
+            <option value="urgente">Urgente</option><option value="alta">Alta</option>
+            <option value="media">Média</option><option value="baixa">Baixa</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Família Relacionada</label>
+          <select class="input" id="pend-familia"><option value="">Geral (sem família específica)</option></select>
+        </div>
+        <div class="form-group"><label>Prazo</label><input class="input" type="date" id="pend-prazo"></div>
+        <div class="form-group"><label>Observações</label><input class="input" id="pend-obs" placeholder="Detalhes adicionais..."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-pendencia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarPendencia()">Criar Pendência</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== BANCO DE DADOS LOCAL =====
+let db = {
+  config: { nome:'Maria Silva', cpf:'', cns:'', cbo:'515105', esf:'ESF Boa Vista', microarea:'003', municipio:'', cnes:'', ine:'' },
+  familias: [],
+  individuos: [],
+  visitas: [],
+  agenda: [],
+  pendencias: [],
+  _nextId: { familia:1, individuo:1, visita:1, agenda:1, pendencia:1 }
+};
+
+function save() { localStorage.setItem('acs_db_v2', JSON.stringify(db)); }
+function load() {
+  const s = localStorage.getItem('acs_db_v2');
+  if (s) db = JSON.parse(s);
+}
+
+function nextId(type) {
+  if (!db._nextId) db._nextId = { familia:1, individuo:1, visita:1, agenda:1, pendencia:1 };
+  return db._nextId[type]++;
+}
+
+// ===== INICIALIZAÇÃO =====
+load();
+if (!db.metas) db.metas = { manha:5, tarde:5, sabado:'nao', domingo:'nao' };
+if (!db.metasAjustes) db.metasAjustes = {};
+if (db.familias.length === 0) seedDemoData();
+
+document.getElementById('data-hoje').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+document.getElementById('mes-atual').textContent = new Date().toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+
+function seedDemoData() {
+  const familiasSeed = [
+    { responsavel:'João da Silva', logradouro:'Rua das Flores', numero:'123', bairro:'Centro', membros:4, risco:'alto', ultimaVisita:'2025-12-10', material:'Tijolo/alvenaria', agua:'Rede pública', esgoto:'Rede pública', lixo:'Coletado', energia:'Com energia elétrica', obs:'Paciente hipertenso descompensado', vulnerabilidade:'sim', cpf:'123.456.789-01', cns:'700 0000 0000 001' },
+    { responsavel:'Ana Paula Souza', logradouro:'Av. Brasil', numero:'456', bairro:'Norte', membros:3, risco:'medio', ultimaVisita:'2026-01-15', material:'Tijolo/alvenaria', agua:'Rede pública', esgoto:'Fossa séptica', lixo:'Coletado', energia:'Com energia elétrica', obs:'Gestante 2º trimestre', vulnerabilidade:'nao', cpf:'987.654.321-00', cns:'700 0000 0000 002' },
+    { responsavel:'Carlos Oliveira', logradouro:'Rua Nova', numero:'789', bairro:'Sul', membros:5, risco:'alto', ultimaVisita:'2025-11-20', material:'Madeira', agua:'Poço/nascente', esgoto:'Fossa rudimentar', lixo:'Queimado', energia:'Com energia elétrica', obs:'Filho com TB ativa, família vulnerável', vulnerabilidade:'sim', cpf:'111.222.333-44', cns:'700 0000 0000 003' },
+    { responsavel:'Maria Jose Santos', logradouro:'Rua Boa Vista', numero:'321', bairro:'Leste', membros:2, risco:'baixo', ultimaVisita:'2026-02-01', material:'Tijolo/alvenaria', agua:'Rede pública', esgoto:'Rede pública', lixo:'Coletado', energia:'Com energia elétrica', obs:'Idosa, bem compensada', vulnerabilidade:'nao', cpf:'444.555.666-77', cns:'700 0000 0000 004' },
+    { responsavel:'Roberto Lima', logradouro:'Trav. do Pomar', numero:'15', bairro:'Centro', membros:6, risco:'medio', ultimaVisita:'2026-01-28', material:'Tijolo/alvenaria', agua:'Rede pública', esgoto:'Rede pública', lixo:'Coletado', energia:'Com energia elétrica', obs:'DM tipo 2', vulnerabilidade:'nao', cpf:'777.888.999-00', cns:'700 0000 0000 005' },
+  ];
+
+  familiasSeed.forEach(f => {
+    db.familias.push({ id: nextId('familia'), prontuario:'FAM-00'+ db._nextId.familia, ...f, dataCadastro: '2025-01-01' });
+  });
+
+  const indSeed = [
+    { nome:'João da Silva', nasc:'1965-03-15', sexo:'M', raca:'Parda', cpf:'123.456.789-01', cns:'700 0000 0000 001', familiaId:1, has:'sim', dm:'nao', gestante:'nao', deficiencia:'nao', mental:'nao', tb:'nao', escolaridade:'Fundamental incompleto' },
+    { nome:'Rosa da Silva', nasc:'1967-07-22', sexo:'F', raca:'Parda', cpf:'', cns:'700 0000 0000 011', familiaId:1, has:'sim', dm:'sim', gestante:'nao', deficiencia:'nao', mental:'nao', tb:'nao', escolaridade:'Fundamental incompleto' },
+    { nome:'Ana Paula Souza', nasc:'1995-11-05', sexo:'F', raca:'Branca', cpf:'987.654.321-00', cns:'700 0000 0000 002', familiaId:2, has:'nao', dm:'nao', gestante:'sim', deficiencia:'nao', mental:'nao', tb:'nao', escolaridade:'Médio completo' },
+    { nome:'Pedro Souza', nasc:'2022-04-10', sexo:'M', raca:'Branca', cpf:'', cns:'700 0000 0000 022', familiaId:2, has:'nao', dm:'nao', gestante:'nao', deficiencia:'nao', mental:'nao', tb:'nao', escolaridade:'Não se aplica' },
+    { nome:'Carlos Oliveira', nasc:'1980-08-30', sexo:'M', raca:'Preta', cpf:'111.222.333-44', cns:'700 0000 0000 003', familiaId:3, has:'nao', dm:'nao', gestante:'nao', deficiencia:'nao', mental:'nao', tb:'tb', escolaridade:'Fundamental incompleto' },
+    { nome:'Maria Jose Santos', nasc:'1952-12-01', sexo:'F', raca:'Branca', cpf:'444.555.666-77', cns:'700 0000 0000 004', familiaId:4, has:'sim', dm:'nao', gestante:'nao', deficiencia:'nao', mental:'nao', tb:'nao', escolaridade:'Sem escolaridade' },
+    { nome:'Roberto Lima', nasc:'1971-06-14', sexo:'M', raca:'Parda', cpf:'777.888.999-00', cns:'700 0000 0000 005', familiaId:5, has:'nao', dm:'sim', gestante:'nao', deficiencia:'nao', mental:'nao', tb:'nao', escolaridade:'Médio completo' },
+  ];
+
+  indSeed.forEach(i => {
+    db.individuos.push({ id: nextId('individuo'), ...i, dataCadastro:'2025-01-01' });
+  });
+
+  db.visitas = [
+    { id:1, data:'2026-02-01', familiaId:2, tipo:'Gestante', desfecho:'Visita realizada', obs:'Orientação sobre pré-natal, vacinação em dia', encam:'nao', vacina:'sim' },
+    { id:2, data:'2026-01-28', familiaId:5, tipo:'Acompanhamento de crônico', desfecho:'Visita realizada', obs:'Verificação de glicemia, em controle', encam:'nao', vacina:'nao-avaliado' },
+    { id:3, data:'2026-01-15', familiaId:4, tipo:'Idoso', desfecho:'Visita realizada', obs:'Paciente bem, orientações nutricionais', encam:'nao', vacina:'sim' },
+  ];
+  db._nextId.visita = 4;
+
+  db.pendencias = [
+    { id:1, titulo:'Visita à família Silva — HAS descompensada', tipo:'visita', prioridade:'urgente', familiaId:1, prazo:'2026-02-28', obs:'Realizar visita urgente', done:false, criado:'2026-02-20' },
+    { id:2, titulo:'Cadastro incompleto — família Oliveira', tipo:'cadastro', prioridade:'alta', familiaId:3, prazo:'2026-03-05', obs:'Faltam dados de membros', done:false, criado:'2026-02-18' },
+    { id:3, titulo:'Vacina BCG pendente — Pedro Souza', tipo:'vacina', prioridade:'alta', familiaId:2, prazo:'2026-03-01', obs:'Criança com 24 meses', done:false, criado:'2026-02-15' },
+    { id:4, titulo:'Busca ativa — família sem visita há 3 meses', tipo:'visita', prioridade:'media', familiaId:3, prazo:'2026-03-10', obs:'', done:false, criado:'2026-02-10' },
+    { id:5, titulo:'Retorno consulta — Carlos Oliveira TB', tipo:'retorno', prioridade:'alta', familiaId:3, prazo:'2026-02-27', obs:'Verificar adesão ao tratamento', done:false, criado:'2026-02-05' },
+  ];
+  db._nextId.pendencia = 6;
+
+  db.agenda = [
+    { id:1, data: hoje(), familiaId:2, tipo:'Gestante', obs:'Acompanhamento pré-natal' },
+    { id:2, data: hoje(), familiaId:1, tipo:'Alto risco', obs:'Visita urgente HAS' },
+    { id:3, data: amanha(), familiaId:5, tipo:'Acompanhamento de crônico', obs:'DM tipo 2' },
+  ];
+  db._nextId.agenda = 4;
+  db.metas = { manha:5, tarde:5, sabado:'nao', domingo:'nao' };
+  db.metasAjustes = {};
+  save();
+}
+
+function hoje() { return new Date().toISOString().split('T')[0]; }
+function amanha() { const d = new Date(); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0]; }
+
+// ===== NAVEGAÇÃO =====
+const pageTitles = {
+  dashboard:'Dashboard', familias:'Domicílios', individuos:'Indivíduos', pendencias:'Pendências',
+  agenda:'Agenda / Visitas', microarea:'Microárea', risco:'Estratificação de Risco',
+  condicoes:'Condições Crônicas', visitas:'Fichas de Visita', producao:'Produção Mensal',
+  metas:'Metas de Visitas', exportar:'Exportar Dados', relatorios:'Relatórios', configuracoes:'Configurações'
+};
+const pageActions = {
+  dashboard:  { label:'+ Novo Domicílio', fn: 'openNovaFamilia()' },
+  individuos: { label:'+ Cadastrar Indivíduo', fn: 'openNovoIndividuo()' },
+  pendencias: { label:'+ Nova Pendência', fn: 'openNovaPendencia()' },
+  visitas:    { label:'+ Registrar Visita', fn: 'openNovaVisita()' },
+  agenda:     { label:'Planejar', fn: "showPage('agenda')" },
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(id)) n.classList.add('active');
+  });
+  document.getElementById('page-title').textContent = pageTitles[id] || id;
+  const btn = document.getElementById('btn-top-action');
+  if (pageActions[id]) {
+    btn.textContent = pageActions[id].label;
+    btn.setAttribute('onclick', pageActions[id].fn);
+    btn.style.display = '';
+  } else {
+    btn.style.display = 'none';
+  }
+  renderPage(id);
+}
+
+function renderPage(id) {
+  const renders = { dashboard: renderDashboard, familias: renderFamilias, individuos: renderIndividuos,
+    pendencias: renderPendencias, agenda: renderAgenda, visitas: renderVisitas, risco: renderRisco,
+    condicoes: renderCondicoes, producao: renderProducao, microarea: renderMicroarea,
+    metas: renderMetas, relatorios: renderRelatorios, configuracoes: renderConfig };
+  if (renders[id]) renders[id]();
+}
+
+// ===== TABS =====
+function switchTab(el, targetId) {
+  // Funciona tanto em modais quanto em cards/páginas
+  const container = el.closest('.modal') || el.closest('.card') || el.closest('.tabs')?.parentElement;
+  if (!container) return;
+  container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  container.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const target = document.getElementById(targetId);
+  if (target) target.classList.add('active');
+}
+
+// ===== TOAST =====
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== MODAIS =====
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== HELPERS =====
+function calcIdade(nasc) {
+  if (!nasc) return '–';
+  const diff = new Date() - new Date(nasc);
+  const anos = Math.floor(diff / (365.25 * 24 * 3600 * 1000));
+  if (anos < 1) {
+    const meses = Math.floor(diff / (30.44 * 24 * 3600 * 1000));
+    return meses + ' meses';
+  }
+  return anos + ' anos';
+}
+
+function getFamilia(id) { return db.familias.find(f => f.id === id); }
+function getFamiliaLabel(id) { const f = getFamilia(id); return f ? f.responsavel : '–'; }
+
+function formatData(d) {
+  if (!d) return '–';
+  const [y,m,dia] = d.split('-');
+  return `${dia}/${m}/${y}`;
+}
+
+function diasSemVisita(dataVisita) {
+  if (!dataVisita) return 999;
+  return Math.floor((new Date() - new Date(dataVisita)) / (24*3600*1000));
+}
+
+function badgeRisco(risco) {
+  const m = { alto:'<span class="badge badge-red"><b style="color:var(--vermelho)">●</b> Alto</span>', medio:'<span class="badge badge-yellow"><b style="color:#795600">●</b> Médio</span>', baixo:'<span class="badge badge-green"><b style="color:var(--verde)">●</b> Baixo</span>' };
+  return m[risco] || '<span class="badge badge-gray">–</span>';
+}
+
+function condicoesLabel(ind) {
+  const tags = [];
+  if (ind.has === 'sim') tags.push('<span class="badge badge-orange">HAS</span>');
+  if (ind.dm === 'sim') tags.push('<span class="badge badge-red">DM</span>');
+  if (ind.gestante === 'sim') tags.push('<span class="badge badge-blue">Gestante</span>');
+  if (ind.tb === 'tb') tags.push('<span class="badge badge-red">TB</span>');
+  if (ind.tb === 'hanseniase') tags.push('<span class="badge badge-red">Hanseníase</span>');
+  if (ind.mental === 'sim') tags.push('<span class="badge badge-blue">S. Mental</span>');
+  if (ind.deficiencia !== 'nao' && ind.deficiencia) tags.push('<span class="badge badge-gray">Defic.</span>');
+  const idade = calcIdade(ind.nasc);
+  if (typeof idade === 'string' && idade.includes('meses')) tags.push('<span class="badge badge-green">≤1 ano</span>');
+  return tags.join(' ') || '<span style="color:var(--cinza-500);font-size:12px">Nenhuma</span>';
+}
+
+function populateFamiliaSelects() {
+  const opts = '<option value="">Selecione...</option>' + db.familias.map(f => `<option value="${f.id}">${f.prontuario} – ${f.responsavel}</option>`).join('');
+  ['ind-familia','vis-familia','pend-familia','agenda-familia'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = (id === 'pend-familia' ? '<option value="">Geral</option>' : '') + db.familias.map(f => `<option value="${f.id}">${f.prontuario} – ${f.responsavel}</option>`).join('');
+  });
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  document.getElementById('s-familias').textContent = db.familias.length;
+  document.getElementById('s-individuos').textContent = db.individuos.length;
+  const mesAtual = new Date().toISOString().slice(0,7);
+  const visitasMes = db.visitas.filter(v => v.data && v.data.startsWith(mesAtual)).length;
+  document.getElementById('s-visitas-mes').textContent = visitasMes;
+  document.getElementById('s-alto-risco').textContent = db.familias.filter(f => f.risco === 'alto').length;
+  const pendAbertas = db.pendencias.filter(p => !p.done).length;
+  document.getElementById('s-pendencias').textContent = pendAbertas;
+  document.getElementById('badge-pend').textContent = pendAbertas;
+
+  // Cobertura vacinal (simplificada)
+  const criancas = db.individuos.filter(i => {
+    const diff = (new Date() - new Date(i.nasc)) / (365.25*24*3600*1000);
+    return diff < 5;
+  });
+  const visitasCriancas = db.visitas.filter(v => v.vacina === 'sim').length;
+  const cobertura = criancas.length ? Math.min(100, Math.round((visitasCriancas / criancas.length)*100)) : 0;
+  document.getElementById('s-cobertura').textContent = cobertura + '%';
+
+  // Alertas
+  const alertas = [];
+  db.familias.filter(f => f.risco === 'alto').forEach(f => {
+    const dias = diasSemVisita(f.ultimaVisita);
+    if (dias > 30) alertas.push({ tipo:'urgente', icon:'●', titulo:`Família ${f.responsavel} — Alto risco sem visita`, texto:`Última visita há ${dias} dias` });
+  });
+  db.pendencias.filter(p => !p.done && p.prioridade === 'urgente').forEach(p => {
+    alertas.push({ tipo:'urgente', icon:'!', titulo:p.titulo, texto:'Pendência urgente' });
+  });
+  db.individuos.filter(i => i.gestante === 'sim').forEach(i => {
+    alertas.push({ tipo:'atencao', icon:'+', titulo:`Gestante: ${i.nome}`, texto:'Acompanhamento gestacional em aberto' });
+  });
+  if (alertas.length === 0) alertas.push({ tipo:'ok', icon:'✓', titulo:'Nenhum alerta crítico', texto:'Todos os alertas foram tratados' });
+
+  document.getElementById('alertas-list').innerHTML = alertas.slice(0,5).map(a =>
+    `<div class="notif notif-${a.tipo}"><div class="notif-icon">${a.icon}</div><div class="notif-text"><h4>${a.titulo}</h4><p>${a.texto}</p></div></div>`
+  ).join('');
+
+  // Visitas hoje
+  const visitasHoje = db.agenda.filter(a => a.data === hoje());
+  const vhEl = document.getElementById('visitas-hoje');
+  if (visitasHoje.length === 0) {
+    vhEl.innerHTML = '<p style="font-size:13px;color:var(--cinza-500)">Nenhuma visita programada para hoje.</p>';
+  } else {
+    vhEl.innerHTML = visitasHoje.map(v => {
+      const f = getFamilia(v.familiaId);
+      return `<div class="agenda-visita"><span class="hora"></span><div><b>${f ? f.responsavel : '–'}</b><br><span style="font-size:12px;color:var(--cinza-700)">${v.tipo} · ${v.obs || ''}</span></div></div>`;
+    }).join('');
+  }
+
+  // Risco dash
+  const alto = db.familias.filter(f => f.risco === 'alto').length;
+  const medio = db.familias.filter(f => f.risco === 'medio').length;
+  const baixo = db.familias.filter(f => f.risco === 'baixo').length;
+  const total = db.familias.length || 1;
+  document.getElementById('risco-dash').innerHTML = [
+    { label:'Alto risco', n:alto, cls:'vermelho' },
+    { label:'Médio risco', n:medio, cls:'amarelo' },
+    { label:'Baixo risco', n:baixo, cls:'' },
+  ].map(r => `
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span>${r.label}</span><strong>${r.n} (${Math.round(r.n/total*100)}%)</strong>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${r.cls}" style="width:${Math.round(r.n/total*100)}%"></div></div>
+    </div>`).join('');
+
+  // Metas
+  const metaVisitas = Math.max(db.familias.length, 10);
+  const pct = Math.min(100, Math.round(visitasMes / metaVisitas * 100));
+  document.getElementById('metas-dash').innerHTML = `
+    <div style="font-size:13px;margin-bottom:8px">Visitas realizadas: <strong>${visitasMes} / ${metaVisitas}</strong> (meta 90%)</div>
+    <div class="progress-bar"><div class="progress-fill ${pct >= 90 ? '' : pct >= 60 ? 'amarelo' : 'vermelho'}" style="width:${pct}%"></div></div>
+    <div style="font-size:12px;color:var(--cinza-700);margin-top:8px">${pct}% da meta atingida</div>
+  `;
+}
+
+// ===== DOMICÍLIOS (agrupado por rua) =====
+let ruasAbertas = new Set(); // quais ruas estão expandidas
+
+// Helpers de Papanicolau e Mamografia
+function papanicolauAtrasado(ind) {
+  // Mulheres entre 25 e 64 anos
+  if (ind.sexo !== 'F') return null;
+  const idade = (new Date() - new Date(ind.nasc)) / (365.25*24*3600*1000);
+  if (idade < 25 || idade > 64) return null;
+  if (!ind.papanicolau) return 'atrasado'; // nunca fez
+  const diasDesd = (new Date() - new Date(ind.papanicolau)) / (24*3600*1000);
+  return diasDesd > 365 ? 'atrasado' : 'ok';
+}
+function mamografiaAtrasada(ind) {
+  if (ind.sexo !== 'F') return null;
+  const idade = (new Date() - new Date(ind.nasc)) / (365.25*24*3600*1000);
+  if (idade < 50 || idade > 69) return null;
+  if (!ind.mamografia) return 'atrasada';
+  const diasDesd = (new Date() - new Date(ind.mamografia)) / (24*3600*1000);
+  return diasDesd > 730 ? 'atrasada' : 'ok';
+}
+
+function renderFamilias() {
+  const q     = (document.getElementById('search-domicilio')?.value || '').toLowerCase();
+  const fc    = document.getElementById('filter-cond-fam')?.value   || '';
+  const fv    = document.getElementById('filter-visita-fam')?.value || '';
+  const ord   = document.getElementById('filter-ordem-fam')?.value  || 'rua';
+  const mesAtual = new Date().toISOString().slice(0,7);
+
+  let familias = db.familias.filter(f => {
+    if (q && !f.responsavel.toLowerCase().includes(q) &&
+             !(f.logradouro||'').toLowerCase().includes(q) &&
+             !(f.prontuario||'').toLowerCase().includes(q)) return false;
+    // Filtro por condição
+    if (fc) {
+      const inds = db.individuos.filter(i => i.familiaId === f.id);
+      if (fc === 'has'           && !inds.some(i => i.has === 'sim')) return false;
+      if (fc === 'dm'            && !inds.some(i => i.dm === 'sim')) return false;
+      if (fc === 'gestante'      && !inds.some(i => i.gestante === 'sim')) return false;
+      if (fc === 'papa-ok'       && !inds.some(i => papanicolauAtrasado(i) === 'ok')) return false;
+      if (fc === 'papa-atrasado' && !inds.some(i => papanicolauAtrasado(i) === 'atrasado')) return false;
+      if (fc === 'mamo-ok'       && !inds.some(i => mamografiaAtrasada(i) === 'ok')) return false;
+      if (fc === 'mamo-atrasada' && !inds.some(i => mamografiaAtrasada(i) === 'atrasada')) return false;
+    }
+    const dias = diasSemVisita(f.ultimaVisita);
+    if (fv === 'sem-visita' && dias < 30) return false;
+    if (fv === 'visitado') {
+      const visitadoMes = db.visitas.some(v => v.familiaId === f.id && (v.data||'').startsWith(mesAtual));
+      if (!visitadoMes) return false;
+    }
+    return true;
+  });
+
+  // Ordenação dentro das ruas
+  const sortFn = {
+    'numero-asc':  (a,b) => (parseInt(a.numero)||0) - (parseInt(b.numero)||0),
+    'numero-desc': (a,b) => (parseInt(b.numero)||0) - (parseInt(a.numero)||0),
+    'prontuario':  (a,b) => (a.prontuario||'').localeCompare(b.prontuario||''),
+    'risco':       (a,b) => { const r={alto:0,medio:1,baixo:2}; return (r[a.risco]??3)-(r[b.risco]??3); },
+    'rua':         (a,b) => (parseInt(a.numero)||0) - (parseInt(b.numero)||0),
+  };
+
+  // Agrupa por logradouro
+  const grupos = {};
+  familias.forEach(f => {
+    const rua = (f.logradouro || 'Sem logradouro').trim();
+    if (!grupos[rua]) grupos[rua] = [];
+    grupos[rua].push(f);
+  });
+
+  // Ordena ruas alfabeticamente
+  const ruasOrdenadas = Object.keys(grupos).sort((a,b) => a.localeCompare(b));
+  ruasOrdenadas.forEach(rua => { grupos[rua].sort(sortFn[ord] || sortFn.rua); });
+
+  // Resumo global
+  const total   = familias.length;
+  const visitados = familias.filter(f => db.visitas.some(v => v.familiaId===f.id && (v.data||'').startsWith(mesAtual))).length;
+  const pendentes = total - visitados;
+  const altoRisco = familias.filter(f => f.risco==='alto').length;
+
+  const resumoEl = document.getElementById('dom-resumo-bar');
+  if (resumoEl) {
+    resumoEl.innerHTML = [
+      ['#1565c0','#e8f0fe', `${total} domicílios`],
+      ['#2e7d32','#e8f7ef', `${visitados} visitados`],
+      ['#e65100','#fff3e0', `${pendentes} pendentes`],
+      ['#c62828','#ffebee', `${altoRisco} alto risco`],
+      ['#607d8b','#f5f5f5', `${ruasOrdenadas.length} ruas`],
+    ].map(([cor,bg,txt]) =>
+      `<span class="dom-resumo-pill" style="background:${bg};color:${cor}">${txt}</span>`
+    ).join('');
+  }
+
+  // Se nenhuma rua aberta, abre a primeira
+  if (ruasAbertas.size === 0 && ruasOrdenadas.length > 0) ruasAbertas.add(ruasOrdenadas[0]);
+
+  const listaEl = document.getElementById('lista-ruas');
+  if (!listaEl) return;
+  if (ruasOrdenadas.length === 0) {
+    listaEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--cinza-500);font-size:14px">Nenhum domicílio encontrado</div>`;
+    return;
+  }
+
+  listaEl.innerHTML = ruasOrdenadas.map(rua => {
+    const doms = grupos[rua];
+    const visRua = doms.filter(f => db.visitas.some(v => v.familiaId===f.id && (v.data||'').startsWith(mesAtual))).length;
+    const pctRua = doms.length ? Math.round(visRua/doms.length*100) : 0;
+    const isOpen = ruasAbertas.has(rua);
+    const ruaId  = 'rua_' + btoa(encodeURIComponent(rua)).replace(/[^a-zA-Z0-9]/g,'').slice(0,20);
+
+    const domsHtml = doms.map(f => {
+      const dias = diasSemVisita(f.ultimaVisita);
+      const visitadoMes = db.visitas.some(v => v.familiaId===f.id && (v.data||'').startsWith(mesAtual));
+      const sitClass = visitadoMes ? 'visitado' : dias > 60 ? 'atrasado' : 'pendente';
+      // Círculo colorido: verde <= 15d, amarelo 16-30d, vermelho > 30d ou nunca
+      const cirCor = dias <= 15 ? '#2db870' : dias <= 30 ? '#f9a825' : '#c62828';
+      const cirLabel = dias < 999 ? `${dias}d atrás` : 'Nunca visitado';
+      const nota = f.nota || '';
+      const inds = db.individuos.filter(i => i.familiaId === f.id);
+      const condTags = [];
+      if (inds.some(i=>i.has==='sim'))      condTags.push('<span class="badge badge-orange" style="font-size:10px">HAS</span>');
+      if (inds.some(i=>i.dm==='sim'))       condTags.push('<span class="badge badge-red" style="font-size:10px">DM</span>');
+      if (inds.some(i=>i.gestante==='sim')) condTags.push('<span class="badge badge-blue" style="font-size:10px">Gest.</span>');
+      if (inds.some(i=>papanicolauAtrasado(i)==='atrasado')) condTags.push('<span class="badge badge-orange" style="font-size:10px">Papa.</span>');
+      if (inds.some(i=>mamografiaAtrasada(i)==='atrasada'))  condTags.push('<span class="badge badge-orange" style="font-size:10px">Mamo.</span>');
+
+      return `<div class="domicilio-row ${sitClass}" style="grid-template-columns:90px 1fr 70px 80px auto">
+        <div>
+          <div class="dom-num">Nº ${f.numero||'–'}</div>
+          <div class="dom-pront">${f.prontuario}</div>
+        </div>
+        <div style="min-width:0">
+          <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.responsavel}</div>
+          <div style="font-size:11px;color:var(--cinza-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${[f.complemento,f.bairro].filter(Boolean).join(' · ')}</div>
+          <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:3px">${condTags.join('')}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:13px;font-weight:700">${f.membros}</div>
+          <div style="font-size:10px;color:var(--cinza-500)">membros</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:2px">
+          <div style="width:16px;height:16px;border-radius:50%;background:${cirCor};box-shadow:0 0 0 3px ${cirCor}22;flex-shrink:0"></div>
+          <div style="font-size:10px;color:var(--cinza-700);text-align:center;white-space:nowrap">${cirLabel}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="editarFamilia(${f.id})">Editar</button>
+          <button class="btn btn-primary btn-sm" onclick="registrarVisitaRapida(${f.id})">Visita</button>
+          <button class="btn btn-secondary btn-sm" style="background:var(--azul-claro);color:var(--azul);border-color:var(--azul)" onclick="openNovoIndividuoNaFamilia(${f.id})">+ Membro</button>
+          <button class="btn btn-danger btn-sm" onclick="excluirFamilia(${f.id})">Excluir</button>
+        </div>
+        <div class="dom-nota-wrap">
+          <textarea class="dom-nota" rows="2" placeholder="Nota / observação sobre este domicílio..."
+            onblur="salvarNota(${f.id},this.value)">${nota}</textarea>
+        </div>
+        <!-- MEMBROS DO DOMICÍLIO -->
+        ${inds.length > 0 ? `<div style="grid-column:1/-1;margin-top:8px;padding:8px;background:var(--cinza-100);border-radius:var(--radius-sm)">
+          <div style="font-size:11px;font-weight:700;color:var(--cinza-700);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Membros (${inds.length})</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${inds.map(ind => {
+              const condList = [];
+              if(ind.has==='sim') condList.push('HAS');
+              if(ind.dm==='sim') condList.push('DM');
+              if(ind.gestante==='sim') condList.push('Gest.');
+              if(ind.mental==='sim') condList.push('S.Mental');
+              const meds = (ind.medicacoes||[]).length;
+              return `<div style="background:#fff;border:1px solid var(--cinza-300);border-radius:6px;padding:6px 10px;font-size:12px;display:flex;gap:8px;align-items:center">
+                <div>
+                  <div style="font-weight:600">${ind.nome}</div>
+                  <div style="color:var(--cinza-500);font-size:11px">${calcIdade(ind.nasc)} · ${ind.sexo==='F'?'Fem':'Masc'}</div>
+                  ${condList.length ? `<div style="margin-top:2px">${condList.map(c=>`<span class="badge badge-red" style="font-size:10px;padding:1px 5px">${c}</span>`).join(' ')}</div>` : ''}
+                  ${meds ? `<div style="font-size:10px;color:var(--cinza-500);margin-top:2px">${meds} medicação(ões)</div>` : ''}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <button class="btn btn-secondary btn-sm" style="font-size:10px;padding:2px 6px" onclick="editarIndividuo(${ind.id})">Editar</button>
+                  <button class="btn btn-danger btn-sm" style="font-size:10px;padding:2px 6px" onclick="excluirIndividuo(${ind.id})">Excluir</button>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : `<div style="grid-column:1/-1;font-size:12px;color:var(--cinza-500);padding:6px 0">Nenhum membro cadastrado. <button class="btn btn-secondary btn-sm" onclick="openNovoIndividuoNaFamilia(${f.id})">+ Cadastrar membro</button></div>`}
+      </div>`;
+    }).join('');
+
+    return `<div class="rua-group">
+      <div class="rua-header" onclick="toggleRua('${ruaId}','${rua.replace(/'/g,"\\'")}')">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+          <span>${rua}</span>
+          <span style="font-size:11px;opacity:0.8">(${doms.length} domicílios)</span>
+        </div>
+        <div class="rua-stats">
+          <!-- lupa busca por número -->
+          <div onclick="event.stopPropagation()" style="display:flex;align-items:center;background:rgba(255,255,255,0.15);border-radius:4px;padding:2px 6px;gap:4px">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5;flex-shrink:0">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input id="busca-num-${ruaId}" type="text" placeholder="Nº..." oninput="filtrarPorNumero('${ruaId}',this.value)"
+              style="background:transparent;border:none;outline:none;color:#fff;font-size:11px;width:44px;font-family:'IBM Plex Mono'" onclick="event.stopPropagation()">
+          </div>
+          <span style="font-size:11px;opacity:0.85">${visRua}/${doms.length} visitados (${pctRua}%)</span>
+          <div style="width:60px;height:5px;background:rgba(255,255,255,0.3);border-radius:3px;overflow:hidden">
+            <div style="width:${pctRua}%;height:100%;background:${pctRua>=80?'#2db870':pctRua>=50?'#fff176':'#ef9a9a'};border-radius:3px"></div>
+          </div>
+          <svg id="arr_${ruaId}" viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;transition:transform 0.2s;transform:${isOpen?'rotate(180deg)':'rotate(0deg)'}">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+      </div>
+      <div class="rua-body ${isOpen?'open':''}" id="${ruaId}">
+        <!-- cabeçalho colunas -->
+        <div style="display:grid;grid-template-columns:90px 1fr 70px 80px auto;gap:8px;padding:6px 14px;background:var(--cinza-100);font-size:11px;font-weight:700;color:var(--cinza-700);text-transform:uppercase;letter-spacing:0.5px">
+          <span>Nº / Pront.</span><span>Responsável / Condições</span><span>Membros</span><span>Visita</span><span>Ações</span>
+        </div>
+        ${domsHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleRua(ruaId, ruaNome) {
+  const el  = document.getElementById(ruaId);
+  const arr = document.getElementById('arr_'+ruaId);
+  if (!el) return;
+  if (ruasAbertas.has(ruaNome)) {
+    ruasAbertas.delete(ruaNome);
+    el.classList.remove('open');
+    if (arr) arr.style.transform = 'rotate(0deg)';
+  } else {
+    ruasAbertas.add(ruaNome);
+    el.classList.add('open');
+    if (arr) arr.style.transform = 'rotate(180deg)';
+  }
+}
+
+function filtrarPorNumero(ruaId, valor) {
+  const body = document.getElementById(ruaId);
+  if (!body) return;
+  const rows = body.querySelectorAll('.domicilio-row');
+  rows.forEach(row => {
+    const numEl = row.querySelector('.dom-num');
+    if (!numEl) return;
+    const num = numEl.textContent.replace(/\D/g,'');
+    row.style.display = (!valor || num.includes(valor.trim())) ? '' : 'none';
+  });
+}
+
+function salvarNota(famId, nota) {
+  const f = db.familias.find(x => x.id === famId);
+  if (f) { f.nota = nota; save(); }
+}
+
+// registrarVisitaRapida — versão completa definida abaixo
+
+// ===== INDIVÍDUOS =====
+function renderIndividuos() {
+  const q = (document.getElementById('search-individuo')?.value || '').toLowerCase();
+  const fc = document.getElementById('filter-cond')?.value || '';
+  let inds = db.individuos.filter(i => {
+    if (q && !i.nome.toLowerCase().includes(q) && !(i.cpf||'').includes(q) && !(i.cns||'').includes(q)) return false;
+    if (fc === 'hta' && i.has !== 'sim') return false;
+    if (fc === 'dm' && i.dm !== 'sim') return false;
+    if (fc === 'gestante' && i.gestante !== 'sim') return false;
+    if (fc === 'saude-mental' && i.mental !== 'sim') return false;
+    if (fc === 'deficiencia' && (i.deficiencia === 'nao' || !i.deficiencia)) return false;
+    if (fc === 'crianca') { // < 2 anos
+      const a = (new Date() - new Date(i.nasc)) / (365.25*24*3600*1000);
+      if (a >= 2) return false;
+    }
+    if (fc === 'idoso') {
+      const a = (new Date() - new Date(i.nasc)) / (365.25*24*3600*1000);
+      if (a < 60) return false;
+    }
+    return true;
+  });
+  const tbody = document.getElementById('tabela-individuos');
+  if (!tbody) return;
+  tbody.innerHTML = inds.map(i => {
+    const f = getFamilia(i.familiaId);
+    const riscoInd = (i.has==='sim' && i.dm==='sim') || i.gestante==='sim' || i.tb==='tb' ? 'alto' : (i.has==='sim' || i.dm==='sim') ? 'medio' : 'baixo';
+    const meds = (i.medicacoes||[]).filter(m=>m.nome);
+    const medsHtml = meds.length ? meds.map(m=>`<div style="font-size:11px"><strong>${m.nome}</strong> ${m.dose} ${m.freq}</div>`).join('') : '–';
+    return `<tr>
+      <td style="font-size:11px;font-family:'IBM Plex Mono'">${i.cns || i.cpf || '–'}</td>
+      <td><strong>${i.nome}</strong>${i.nomeSocial ? `<br><small style="color:var(--cinza-500)">Social: ${i.nomeSocial}</small>` : ''}</td>
+      <td>${calcIdade(i.nasc)}</td>
+      <td>${i.sexo === 'F' ? 'Fem' : 'Masc'}</td>
+      <td style="font-size:12px">${f ? f.responsavel : '–'}</td>
+      <td>${condicoesLabel(i)}</td>
+      <td style="max-width:160px">${medsHtml}</td>
+      <td>${badgeRisco(riscoInd)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="editarIndividuo(${i.id})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="excluirIndividuo(${i.id})">Excluir</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--cinza-500)">Nenhum membro encontrado</td></tr>';
+}
+
+// ===== PENDÊNCIAS =====
+function renderPendencias() {
+  const ft = document.getElementById('filter-pend-tipo')?.value || '';
+  const fp = document.getElementById('filter-pend-prio')?.value || '';
+  let pends = db.pendencias.filter(p => {
+    if (ft && p.tipo !== ft) return false;
+    if (fp && p.prioridade !== fp) return false;
+    return true;
+  });
+  const prioCls = { urgente:'badge-red', alta:'badge-orange', media:'badge-yellow', baixa:'badge-green' };
+  const prioIcon = { urgente:'●', alta:'●', media:'●', baixa:'●' };
+  const prioDot = { urgente:'var(--vermelho)', alta:'var(--laranja)', media:'var(--amarelo)', baixa:'var(--verde-claro)' };
+  const tipIcon = { visita:'[C]', cadastro:'[F]', vacina:'[V]', encaminhamento:'[E]', exame:'[X]', retorno:'[R]' };
+  document.getElementById('lista-pendencias').innerHTML = pends.map(p => `
+    <div class="pend-item" id="pend-${p.id}" style="${p.done ? 'opacity:0.5' : ''}">
+      <div class="pend-check ${p.done ? 'done' : ''}" onclick="togglePendencia(${p.id})">
+        ${p.done ? '✓' : ''}
+      </div>
+      <div class="pend-text">
+        <h4>${tipIcon[p.tipo]||'[P]'} ${p.titulo}</h4>
+        <p>${p.obs || '–'}</p>
+        <div class="pend-meta">Prazo: ${formatData(p.prazo)} · ${getFamiliaLabel(p.familiaId)}</div>
+      </div>
+      <div>
+        <span class="badge ${prioCls[p.prioridade]||'badge-gray'}"><span style="color:${prioDot[p.prioridade]||'#999'}">●</span> ${p.prioridade}</span>
+        <br><button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="excluirPendencia(${p.id})">Excluir</button>
+      </div>
+    </div>`).join('') || '<p style="font-size:13px;color:var(--cinza-500);padding:20px">Nenhuma pendência encontrada.</p>';
+}
+
+function togglePendencia(id) {
+  const p = db.pendencias.find(x => x.id === id);
+  if (p) { p.done = !p.done; save(); renderPendencias(); updateBadge(); toast(p.done ? 'Pendência resolvida ✓' : 'Reaberta', 'success'); }
+}
+function excluirPendencia(id) {
+  if (confirm('Excluir esta pendência?')) { db.pendencias = db.pendencias.filter(p => p.id !== id); save(); renderPendencias(); updateBadge(); }
+}
+function updateBadge() {
+  const n = db.pendencias.filter(p => !p.done).length;
+  document.getElementById('badge-pend').textContent = n;
+}
+
+// ===== AGENDA =====
+function renderAgenda() {
+  populateFamiliaSelects();
+  document.getElementById('agenda-data').value = hoje();
+  const agDs = [...new Set(db.agenda.map(a => a.data))].sort().reverse();
+  document.getElementById('lista-agenda').innerHTML = agDs.map(d => {
+    const its = db.agenda.filter(a => a.data === d);
+    return `<div class="agenda-dia">
+      <div class="agenda-dia-header">
+        <span>${formatData(d)}</span>
+        <span class="badge badge-blue">${its.length} visita(s)</span>
+      </div>
+      ${its.map(v => {
+        const f = getFamilia(v.familiaId);
+        return `<div class="agenda-visita">
+          <span class="hora"></span>
+          <div style="flex:1"><b>${f ? f.responsavel : '–'}</b> <span style="color:var(--cinza-500);font-size:12px">— ${v.tipo}</span><br>
+          <span style="font-size:12px;color:var(--cinza-700)">${v.obs||''}</span></div>
+          <button class="btn btn-danger btn-sm" onclick="removerAgenda(${v.id})">✕</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('') || '<p style="font-size:13px;color:var(--cinza-500)">Nenhuma visita agendada.</p>';
+}
+
+function agendarVisita() {
+  const data = document.getElementById('agenda-data').value;
+  const famId = parseInt(document.getElementById('agenda-familia').value);
+  const tipo = document.getElementById('agenda-tipo').value;
+  const obs = document.getElementById('agenda-obs').value;
+  if (!data || !famId) { toast('Preencha data e família', 'error'); return; }
+  db.agenda.push({ id: nextId('agenda'), data, familiaId:famId, tipo, obs });
+  save(); renderAgenda(); toast('Visita agendada!', 'success');
+}
+function removerAgenda(id) { db.agenda = db.agenda.filter(a => a.id !== id); save(); renderAgenda(); }
+
+// ===== VISITAS =====
+function renderVisitas() {
+  const q = (document.getElementById('search-visita')?.value || '').toLowerCase();
+  const ft = document.getElementById('filter-visita-tipo')?.value || '';
+  let vis = db.visitas.filter(v => {
+    const f = getFamilia(v.familiaId);
+    if (q && !(f?.responsavel||'').toLowerCase().includes(q) && !(v.data||'').includes(q)) return false;
+    if (ft && !v.tipo.toLowerCase().includes(ft)) return false;
+    return true;
+  }).sort((a,b) => (b.data||'') > (a.data||'') ? 1 : -1);
+
+  const tbody = document.getElementById('tabela-visitas');
+  if (!tbody) return;
+  tbody.innerHTML = vis.map(v => `<tr>
+    <td style="font-family:'IBM Plex Mono';font-size:12px">${formatData(v.data)}</td>
+    <td>${getFamiliaLabel(v.familiaId)}</td>
+    <td><span class="badge badge-blue">${v.tipo}</span></td>
+    <td><span class="badge ${v.desfecho === 'Visita realizada' ? 'badge-green' : 'badge-yellow'}">${v.desfecho}</span></td>
+    <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${v.obs||'–'}</td>
+    <td style="font-size:11px;color:var(--cinza-700)">${db.config.cbo}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--cinza-500)">Nenhuma visita registrada</td></tr>';
+}
+
+// ===== RISCO =====
+function renderRisco() {
+  const q = (document.getElementById('search-risco')?.value || '').toLowerCase();
+  const fc = document.getElementById('filter-risco-cat')?.value || '';
+  let fams = db.familias.filter(f => {
+    if (q && !f.responsavel.toLowerCase().includes(q)) return false;
+    if (fc && f.risco !== fc) return false;
+    return true;
+  });
+
+  const fatoresRisco = (f) => {
+    const inds = db.individuos.filter(i => i.familiaId === f.id);
+    const fat = [];
+    if (inds.some(i => i.has === 'sim')) fat.push('HAS');
+    if (inds.some(i => i.dm === 'sim')) fat.push('DM');
+    if (inds.some(i => i.gestante === 'sim')) fat.push('Gestante');
+    if (inds.some(i => i.tb !== 'nao')) fat.push('TB/Hanseníase');
+    if (inds.some(i => i.mental === 'sim')) fat.push('S. Mental');
+    if (inds.some(i => i.deficiencia !== 'nao' && i.deficiencia)) fat.push('Deficiência');
+    if (f.vulnerabilidade === 'sim') fat.push('Vulnerabilidade');
+    if (f.esgoto === 'Céu aberto' || f.agua === 'Poço/nascente') fat.push('Saneamento');
+    return fat;
+  };
+
+  document.getElementById('tabela-risco').innerHTML = fams.map(f => {
+    const fat = fatoresRisco(f);
+    const pts = fat.length;
+    return `<tr>
+      <td><strong>${f.responsavel}</strong><br><span style="font-size:11px;color:var(--cinza-500)">${f.logradouro}, ${f.numero}</span></td>
+      <td>${badgeRisco(f.risco)}</td>
+      <td><span class="badge badge-gray" style="font-family:'IBM Plex Mono'">${pts} pts</span></td>
+      <td style="font-size:12px">${fat.join(' · ') || '–'}</td>
+      <td style="font-size:12px;font-family:'IBM Plex Mono'">${formatData(f.ultimaVisita)}</td>
+      <td>
+        <select class="input" style="font-size:12px;padding:4px 8px" onchange="alterarRisco(${f.id}, this.value)">
+          <option ${f.risco==='baixo'?'selected':''} value="baixo">Baixo</option>
+          <option ${f.risco==='medio'?'selected':''} value="medio">Médio</option>
+          <option ${f.risco==='alto'?'selected':''} value="alto">Alto</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Gráficos visuais
+  const alto = db.familias.filter(f => f.risco === 'alto').length;
+  const medio = db.familias.filter(f => f.risco === 'medio').length;
+  const baixo = db.familias.filter(f => f.risco === 'baixo').length;
+  const total = db.familias.length || 1;
+  const riscoGraf = document.getElementById('graficos-risco');
+  if (riscoGraf) {
+    riscoGraf.innerHTML = `
+      <div class="card">
+        <div class="card-title">Distribuição de Risco</div>
+        ${[['Alto risco', alto, 'var(--vermelho)'],['Médio risco', medio, 'var(--amarelo)'],['Baixo risco', baixo, 'var(--verde-claro)']].map(([l,n,c]) => `
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:13px">${l}<strong>${n}</strong></div>
+            <div class="progress-bar"><div style="height:100%;width:${Math.round(n/total*100)}%;background:${c};border-radius:4px"></div></div>
+            <div style="font-size:11px;color:var(--cinza-500);margin-top:2px">${Math.round(n/total*100)}% das famílias</div>
+          </div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title">Condições de Saúde</div>
+        ${[
+          ['HAS', db.individuos.filter(i=>i.has==='sim').length],
+          ['DM', db.individuos.filter(i=>i.dm==='sim').length],
+          ['Gestantes', db.individuos.filter(i=>i.gestante==='sim').length],
+          ['TB/Hanseníase', db.individuos.filter(i=>i.tb!=='nao').length],
+          ['S. Mental', db.individuos.filter(i=>i.mental==='sim').length],
+        ].map(([l,n]) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--cinza-100);font-size:13px">
+            <span>${l}</span><span class="badge badge-gray" style="font-family:'IBM Plex Mono'">${n}</span>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+function alterarRisco(famId, novoRisco) {
+  const f = db.familias.find(x => x.id === famId);
+  if (f) { f.risco = novoRisco; save(); toast('Risco atualizado', 'success'); }
+}
+
+// ===== CONDIÇÕES CRÔNICAS =====
+function renderCondicoes() {
+  // HAS
+  const has = db.individuos.filter(i => i.has === 'sim');
+  document.getElementById('tab-has-body').innerHTML = has.map(i => `<tr>
+    <td><strong>${i.nome}</strong></td><td>${calcIdade(i.nasc)}</td>
+    <td>–</td><td>–</td>
+    <td>${badgeRisco('medio')}</td>
+    <td>${formatData(getUltimaVisita(i.familiaId))}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cinza-500)">Nenhum registrado</td></tr>';
+
+  // DM
+  const dm = db.individuos.filter(i => i.dm === 'sim');
+  document.getElementById('tab-dm-body').innerHTML = dm.map(i => `<tr>
+    <td><strong>${i.nome}</strong></td><td>${calcIdade(i.nasc)}</td>
+    <td>–</td><td>–</td>
+    <td>${badgeRisco('medio')}</td>
+    <td>${formatData(getUltimaVisita(i.familiaId))}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cinza-500)">Nenhum registrado</td></tr>';
+
+  // Gestantes
+  const gest = db.individuos.filter(i => i.gestante === 'sim');
+  document.getElementById('tab-gestante-body').innerHTML = gest.map(i => `<tr>
+    <td><strong>${i.nome}</strong></td><td>${calcIdade(i.nasc)}</td>
+    <td>–</td><td>–</td>
+    <td>${badgeRisco('medio')}</td>
+    <td>–</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cinza-500)">Nenhum registrado</td></tr>';
+
+  // Crianças
+  const cri = db.individuos.filter(i => { const a = (new Date()-new Date(i.nasc))/(365.25*24*3600*1000); return a < 5; });
+  document.getElementById('tab-crianca-body').innerHTML = cri.map(i => `<tr>
+    <td><strong>${i.nome}</strong></td><td>${calcIdade(i.nasc)}</td>
+    <td><span class="badge badge-yellow">Verificar</span></td>
+    <td>–</td><td><span class="badge badge-green">Normal</span></td>
+    <td>${formatData(getUltimaVisita(i.familiaId))}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cinza-500)">Nenhum registrado</td></tr>';
+
+  // Idosos
+  const idosos = db.individuos.filter(i => { const a = (new Date()-new Date(i.nasc))/(365.25*24*3600*1000); return a >= 60; });
+  document.getElementById('tab-idoso-body').innerHTML = idosos.map(i => `<tr>
+    <td><strong>${i.nome}</strong></td><td>${calcIdade(i.nasc)}</td>
+    <td>${condicoesLabel(i)}</td>
+    <td>–</td><td>–</td>
+    <td>${formatData(getUltimaVisita(i.familiaId))}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cinza-500)">Nenhum registrado</td></tr>';
+
+  // Mental
+  const mental = db.individuos.filter(i => i.mental === 'sim');
+  document.getElementById('tab-mental-body').innerHTML = mental.map(i => `<tr>
+    <td><strong>${i.nome}</strong></td><td>${calcIdade(i.nasc)}</td>
+    <td>–</td><td>–</td><td>–</td>
+    <td>${formatData(getUltimaVisita(i.familiaId))}</td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--cinza-500)">Nenhum registrado</td></tr>';
+}
+
+function getUltimaVisita(famId) {
+  const vis = db.visitas.filter(v => v.familiaId === famId).sort((a,b) => b.data > a.data ? 1:-1);
+  return vis.length ? vis[0].data : null;
+}
+
+// ===== PRODUÇÃO =====
+function renderProducao() {
+  const mesAtual = new Date().toISOString().slice(0,7);
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const d = new Date();
+  const mesLabel = document.getElementById('prod-mes-label');
+  if (mesLabel) mesLabel.textContent = `${meses[d.getMonth()]} ${d.getFullYear()}`;
+
+  const visMes = db.visitas.filter(v => v.data?.startsWith(mesAtual) && v.escopo !== 'individuo');
+  document.getElementById('prod-visitas').textContent = visMes.length;
+  const pctGeral = db.familias.length ? Math.min(100, Math.round(visMes.length / db.familias.length * 100)) : 0;
+  document.getElementById('pb-visitas').style.width = pctGeral + '%';
+
+  const novosCad = db.familias.filter(f => f.dataCadastro?.startsWith(mesAtual)).length;
+  document.getElementById('prod-cadastros').textContent = novosCad;
+  document.getElementById('pb-cadastros').style.width = Math.min(100, novosCad * 4) + '%';
+  document.getElementById('prod-atividades').textContent = Math.floor(visMes.length * 0.3) || 0;
+  document.getElementById('pb-atividades').style.width = '55%';
+  document.getElementById('prod-encam').textContent = visMes.filter(v => v.encam === 'sim').length;
+
+  // ===== CARDS CIRCULARES DE ACOMPANHAMENTO =====
+  // Calcula total e visitados no mês por condição
+  const inds = db.individuos;
+  const famVisitadasMes = new Set(visMes.map(v => v.familiaId));
+
+  function visitadosMes(lista) {
+    return lista.filter(i => famVisitadasMes.has(i.familiaId)).length;
+  }
+
+  const idosos      = inds.filter(i => (new Date()-new Date(i.nasc))/(365.25*24*3600*1000) >= 60);
+  const criancas    = inds.filter(i => (new Date()-new Date(i.nasc))/(365.25*24*3600*1000) < 2);
+  const maisSeis    = db.familias.filter(f => {
+    if (!f.ultimaVisita) return true; // nunca visitado
+    const mesesSemVisita = (new Date()-new Date(f.ultimaVisita+'T00:00:00'))/(30.44*24*3600*1000);
+    return mesesSemVisita >= 6;
+  });
+  const gestantes   = inds.filter(i => i.gestante === 'sim');
+  const has         = inds.filter(i => i.has === 'sim');
+  const dm          = inds.filter(i => i.dm === 'sim');
+  const tb          = inds.filter(i => i.tb === 'tb');
+  const hanseniase  = inds.filter(i => i.tb === 'hanseniase');
+  const cancer      = inds.filter(i => (i.outras||'').toLowerCase().includes('câncer') || (i.outras||'').toLowerCase().includes('cancer'));
+  const mental      = inds.filter(i => i.mental === 'sim');
+  const acamados    = inds.filter(i => (i.outras||'').toLowerCase().includes('acamado'));
+  const domiciliados = db.familias;
+  const mulheres2564 = inds.filter(i => { const a=(new Date()-new Date(i.nasc))/(365.25*24*3600*1000); return i.sexo==='F' && a>=25 && a<=64; });
+  // Mamografia: mulheres 50-69 (faixa rastreamento INCA)
+  const mamografia  = inds.filter(i => { const a=(new Date()-new Date(i.nasc))/(365.25*24*3600*1000); return i.sexo==='F' && a>=50 && a<=69; });
+  // Bolsa Família: famílias com renda baixa (usamos vulnerabilidade como proxy)
+  const bolsaFam    = db.familias.filter(f => f.vulnerabilidade === 'sim');
+  // Cadastro incompleto: famílias sem CNS do responsável ou sem logradouro
+  const cadIncompleto = db.familias.filter(f => !f.cns || !f.logradouro);
+  // Carteirinha: crianças < 10 anos (caderneta de vacinação)
+  const carteirinha = inds.filter(i => (new Date()-new Date(i.nasc))/(365.25*24*3600*1000) < 10);
+
+  // Para cards baseados em famílias, calcular cobertura por famílias visitadas
+  function visitadosMesFam(lista) {
+    return lista.filter(f => famVisitadasMes.has(f.id)).length;
+  }
+
+  const cards = [
+    { label:'Idosos',           total:idosos.length,        vis:visitadosMes(idosos),              icon:svgIdoso(),        cor:'#3f51b5' },
+    { label:'Crianças <2a',    total:criancas.length,      vis:visitadosMes(criancas),            icon:svgCrianca(),      cor:'#3f51b5' },
+    { label:'Gestantes',        total:gestantes.length,     vis:visitadosMes(gestantes),           icon:svgGestante(),     cor:'#e91e63' },
+    { label:'Hipertensos',      total:has.length,           vis:visitadosMes(has),                 icon:svgCoracao(),      cor:'#f44336' },
+    { label:'Diabéticos',       total:dm.length,            vis:visitadosMes(dm),                  icon:svgDiabetes(),     cor:'#ff9800' },
+    { label:'Tuberculosos',     total:tb.length,            vis:visitadosMes(tb),                  icon:svgPulmao(),       cor:'#9c27b0' },
+    { label:'Hanseníase',       total:hanseniase.length,    vis:visitadosMes(hanseniase),          icon:svgHansen(),       cor:'#ff5722' },
+    { label:'Câncer',           total:cancer.length,        vis:visitadosMes(cancer),              icon:svgCancer(),       cor:'#9c27b0' },
+    { label:'S. Mental',        total:mental.length,        vis:visitadosMes(mental),              icon:svgMental(),       cor:'#2196f3' },
+    { label:'Acamados',         total:acamados.length,      vis:visitadosMes(acamados),            icon:svgAcamado(),      cor:'#795548' },
+    { label:'Domiciliados',     total:domiciliados.length,  vis:visitadosMesFam(domiciliados),     icon:svgCasa(),         cor:'#4caf50' },
+    { label:'Mulheres 25-64',   total:mulheres2564.length,  vis:visitadosMes(mulheres2564),        icon:svgMulher(),       cor:'#e91e63' },
+    { label:'Mamografia',       total:mamografia.length,    vis:visitadosMes(mamografia),          icon:svgMamografia(),   cor:'#d81b60' },
+    { label:'Bolsa Família',    total:bolsaFam.length,      vis:visitadosMesFam(bolsaFam),         icon:svgBolsaFam(),     cor:'#2e7d32' },
+    { label:'+6 Meses s/ vis.',total:maisSeis.length,       vis:visitadosMesFam(maisSeis),         icon:svgMaisSeis(),     cor:'#0288d1' },
+    { label:'Cad. Incompleto',  total:cadIncompleto.length, vis:visitadosMesFam(cadIncompleto),    icon:svgCadIncomp(),    cor:'#e65100' },
+    { label:'Carteirinha',      total:carteirinha.length,   vis:visitadosMes(carteirinha),         icon:svgCarteirinha(),  cor:'#00838f' },
+  ];
+
+  const grid = document.getElementById('acomp-grid');
+  if (!grid) return;
+  grid.innerHTML = cards.map(c => renderCircleCard(c)).join('');
+
+  // Detalhe por tipo
+  const tipos = {};
+  visMes.forEach(v => { tipos[v.tipo] = (tipos[v.tipo]||0) + 1; });
+  document.getElementById('prod-detalhe').innerHTML = Object.entries(tipos).map(([t,n]) => `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100);font-size:13px">
+      <span>${t}</span><strong>${n}</strong>
+    </div>`).join('') || '<p style="font-size:13px;color:var(--cinza-500)">Sem visitas este mês</p>';
+
+  // Histórico
+  const mesesCurtos = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const ano = new Date().getFullYear();
+  document.getElementById('prod-historico').innerHTML = Array.from({length:6}, (_,i) => {
+    const dt = new Date(ano, new Date().getMonth() - i, 1);
+    const key = dt.toISOString().slice(0,7);
+    const n = db.visitas.filter(v => v.data?.startsWith(key)).length;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--cinza-100);font-size:13px">
+      <span>${mesesCurtos[dt.getMonth()]} ${dt.getFullYear()}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:80px;height:6px;background:var(--cinza-200);border-radius:3px;overflow:hidden">
+          <div style="width:${Math.min(100,n*5)}%;height:100%;background:var(--verde-claro)"></div>
+        </div>
+        <strong>${n}</strong>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Gera cor do arco baseada na porcentagem
+function arcColor(pct) {
+  if (pct >= 80) return '#2db870';   // verde
+  if (pct >= 50) return '#f9a825';   // amarelo
+  if (pct >= 25) return '#ff9800';   // laranja
+  return '#f44336';                  // vermelho
+}
+
+// Renderiza card circular no estilo da imagem
+function renderCircleCard({label, total, vis, icon, cor}) {
+  const pct = total > 0 ? Math.round(vis / total * 100) : 0;
+  const r = 46, cx = 56, cy = 56;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  const color = arcColor(pct);
+  return `
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:default">
+    <div style="position:relative;width:112px;height:112px">
+      <!-- número total acima (badge) -->
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+           font-size:13px;font-weight:800;color:${cor};font-family:'IBM Plex Mono',monospace;
+           white-space:nowrap;z-index:2">${total}</div>
+
+      <!-- SVG do círculo de progresso -->
+      <svg width="112" height="112" viewBox="0 0 112 112" style="position:absolute;top:0;left:0">
+        <!-- trilha cinza fundo -->
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e0e0e0" stroke-width="7"/>
+        <!-- arco colorido -->
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+          stroke="${color}" stroke-width="7"
+          stroke-dasharray="${dash.toFixed(2)} ${(circ - dash).toFixed(2)}"
+          stroke-dashoffset="${(circ * 0.25).toFixed(2)}"
+          stroke-linecap="round"
+          transform="rotate(-90 ${cx} ${cy})"/>
+      </svg>
+
+      <!-- ícone central -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
+        <div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center">${icon}</div>
+        <div style="font-size:10px;font-weight:700;color:${color}">${pct}%</div>
+      </div>
+
+      <!-- ponto indicador no topo do arco -->
+      <div style="position:absolute;top:6px;left:50%;transform:translateX(-50%);
+           width:8px;height:8px;background:${color};border-radius:50%;border:2px solid #fff;
+           box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:#424242;text-align:center;line-height:1.3;max-width:110px">${label}</div>
+  </div>`;
+}
+
+// ===== ÍCONES SVG DAS CONDIÇÕES (inline, sem dependência externa) =====
+function svgIdoso() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- casal idoso simplificado -->
+    <circle cx="22" cy="18" r="8" fill="#7986cb"/>
+    <path d="M10 44c0-8 6-13 12-13s12 5 12 13" fill="#7986cb"/>
+    <circle cx="42" cy="18" r="8" fill="#9575cd"/>
+    <path d="M30 44c0-8 6-13 12-13s12 5 12 13" fill="#9575cd"/>
+    <!-- óculos -->
+    <rect x="15" y="17" width="7" height="4" rx="2" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <rect x="35" y="17" width="7" height="4" rx="2" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <!-- bengala -->
+    <line x1="52" y1="32" x2="56" y2="48" stroke="#9575cd" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`;
+}
+function svgCrianca() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <circle cx="22" cy="16" r="9" fill="#42a5f5"/>
+    <path d="M11 44c0-7 5-12 11-12s11 5 11 12" fill="#42a5f5"/>
+    <circle cx="42" cy="16" r="9" fill="#ef5350"/>
+    <path d="M31 44c0-7 5-12 11-12s11 5 11 12" fill="#ef5350"/>
+  </svg>`;
+}
+function svgGestante() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <circle cx="32" cy="14" r="9" fill="#e91e63"/>
+    <path d="M20 28h24c0 14-8 24-12 24s-12-10-12-24z" fill="#f48fb1"/>
+    <circle cx="36" cy="36" r="5" fill="#e91e63" opacity="0.7"/>
+    <!-- símbolo feminino -->
+    <circle cx="48" cy="12" r="5" fill="none" stroke="#e91e63" stroke-width="2"/>
+    <line x1="48" y1="17" x2="48" y2="24" stroke="#e91e63" stroke-width="2"/>
+    <line x1="45" y1="21" x2="51" y2="21" stroke="#e91e63" stroke-width="2"/>
+  </svg>`;
+}
+function svgCoracao() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <path d="M32 52 C20 42 8 34 8 22 C8 14 14 8 22 8 C27 8 31 11 32 14 C33 11 37 8 42 8 C50 8 56 14 56 22 C56 34 44 42 32 52Z" fill="#ef5350"/>
+    <!-- raio de alerta -->
+    <polygon points="28,20 24,32 31,32 27,44 36,28 29,28" fill="#fff" opacity="0.9"/>
+  </svg>`;
+}
+function svgDiabetes() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- dedo com gota de sangue -->
+    <rect x="24" y="12" width="16" height="28" rx="8" fill="#ffb74d"/>
+    <ellipse cx="32" cy="46" rx="5" ry="7" fill="#ef5350"/>
+    <!-- gotinha -->
+    <path d="M32 40 L28 50 Q32 56 36 50 Z" fill="#ef5350"/>
+  </svg>`;
+}
+function svgPulmao() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <path d="M32 8 L32 18 M32 18 C24 18 14 24 12 36 C10 48 18 56 26 54 C30 52 32 48 32 48" fill="none" stroke="#9c27b0" stroke-width="3" stroke-linecap="round"/>
+    <path d="M32 18 C40 18 50 24 52 36 C54 48 46 56 38 54 C34 52 32 48 32 48" fill="none" stroke="#9c27b0" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="20" cy="38" rx="7" ry="10" fill="#ce93d8" opacity="0.7"/>
+    <ellipse cx="44" cy="38" rx="7" ry="10" fill="#ce93d8" opacity="0.7"/>
+  </svg>`;
+}
+function svgHansen() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- mão com manchas -->
+    <path d="M16 48 L16 24 Q16 18 22 18 L22 38 M22 20 L22 14 Q22 10 26 10 Q30 10 30 14 L30 32 M30 12 L30 10 Q30 6 34 6 Q38 6 38 10 L38 30 M38 10 L38 8 Q38 4 42 4 Q46 4 46 8 L46 28 L46 40 Q46 50 36 52 L24 52 Q14 52 14 42 L14 48Z" fill="#ffccbc" stroke="#ff7043" stroke-width="1.5"/>
+    <!-- manchas -->
+    <circle cx="24" cy="42" r="3" fill="#ff5722" opacity="0.7"/>
+    <circle cx="34" cy="46" r="2.5" fill="#ff5722" opacity="0.7"/>
+    <circle cx="28" cy="36" r="2" fill="#ff5722" opacity="0.6"/>
+  </svg>`;
+}
+function svgCancer() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- laço roxo -->
+    <path d="M32 32 C28 24 16 16 18 10 C20 4 28 6 32 14 C36 6 44 4 46 10 C48 16 36 24 32 32Z" fill="#9c27b0"/>
+    <path d="M32 32 L28 46 Q32 52 36 46 Z" fill="#9c27b0"/>
+  </svg>`;
+}
+function svgMental() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- cérebro estilizado -->
+    <path d="M32 8 C20 8 12 16 12 26 C12 34 16 40 24 43 L24 52 L40 52 L40 43 C48 40 52 34 52 26 C52 16 44 8 32 8Z" fill="#90caf9"/>
+    <!-- divisão -->
+    <line x1="32" y1="10" x2="32" y2="44" stroke="#42a5f5" stroke-width="2" stroke-dasharray="3,3"/>
+    <!-- espirais -->
+    <path d="M20 22 Q16 18 20 16 Q24 14 24 18 Q24 22 20 22" fill="none" stroke="#1565c0" stroke-width="2"/>
+    <path d="M44 22 Q48 18 44 16 Q40 14 40 18 Q40 22 44 22" fill="none" stroke="#1565c0" stroke-width="2"/>
+  </svg>`;
+}
+function svgAcamado() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- cama -->
+    <rect x="8" y="36" width="48" height="12" rx="3" fill="#7e57c2"/>
+    <rect x="8" y="36" width="12" height="16" rx="2" fill="#5e35b1"/>
+    <rect x="44" y="36" width="12" height="16" rx="2" fill="#5e35b1"/>
+    <!-- pessoa deitada -->
+    <circle cx="46" cy="30" r="7" fill="#ffcc80"/>
+    <rect x="14" y="28" width="34" height="10" rx="4" fill="#ffe082"/>
+    <!-- travesseiro -->
+    <rect x="36" y="26" width="16" height="10" rx="4" fill="#fff"/>
+  </svg>`;
+}
+function svgCasa() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <polygon points="32,8 56,28 56,56 8,56 8,28" fill="#81c784"/>
+    <polygon points="32,8 56,28 8,28" fill="#4caf50"/>
+    <rect x="24" y="36" width="16" height="20" rx="2" fill="#a5d6a7"/>
+    <rect x="26" y="38" width="6" height="6" rx="1" fill="#fff" opacity="0.8"/>
+    <rect x="32" y="38" width="6" height="6" rx="1" fill="#fff" opacity="0.8"/>
+  </svg>`;
+}
+function svgMulher() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <circle cx="32" cy="14" r="10" fill="#f48fb1"/>
+    <path d="M20 30 Q20 52 32 54 Q44 52 44 30 Q44 24 32 24 Q20 24 20 30Z" fill="#f06292"/>
+    <!-- símbolo feminino -->
+    <circle cx="32" cy="40" r="8" fill="none" stroke="#ad1457" stroke-width="2.5"/>
+    <line x1="32" y1="48" x2="32" y2="56" stroke="#ad1457" stroke-width="2.5"/>
+    <line x1="28" y1="52" x2="36" y2="52" stroke="#ad1457" stroke-width="2.5"/>
+  </svg>`;
+}
+
+function svgMamografia() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- silhueta busto feminino -->
+    <path d="M32 10 C24 10 18 16 16 24 C14 32 16 44 20 50 L44 50 C48 44 50 32 48 24 C46 16 40 10 32 10Z" fill="#f8bbd0"/>
+    <!-- duas mamas estilizadas -->
+    <ellipse cx="24" cy="34" rx="9" ry="8" fill="#f48fb1"/>
+    <ellipse cx="40" cy="34" rx="9" ry="8" fill="#f48fb1"/>
+    <!-- símbolo lupa / raio-x -->
+    <circle cx="24" cy="34" r="5" fill="none" stroke="#c2185b" stroke-width="2"/>
+    <circle cx="40" cy="34" r="5" fill="none" stroke="#c2185b" stroke-width="2"/>
+    <!-- laço rosa no topo -->
+    <path d="M32 14 C29 10 22 10 24 14 C26 18 32 16 32 16 C32 16 38 18 40 14 C42 10 35 10 32 14Z" fill="#e91e63"/>
+  </svg>`;
+}
+
+function svgBolsaFam() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- casa com coração -->
+    <polygon points="32,8 54,26 54,54 10,54 10,26" fill="#a5d6a7"/>
+    <polygon points="32,8 54,26 10,26" fill="#66bb6a"/>
+    <!-- porta -->
+    <rect x="26" y="38" width="12" height="16" rx="2" fill="#388e3c"/>
+    <!-- coração dentro -->
+    <path d="M32 44 C30 40 24 40 24 44 C24 48 32 52 32 52 C32 52 40 48 40 44 C40 40 34 40 32 44Z" fill="#e53935"/>
+    <!-- cifrão -->
+    <text x="30" y="30" font-size="14" font-weight="bold" fill="#fff" font-family="sans-serif">R$</text>
+  </svg>`;
+}
+
+function svgMaisSeis() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- bebê com +6 -->
+    <circle cx="32" cy="20" r="12" fill="#b3e5fc"/>
+    <!-- rostinho -->
+    <circle cx="28" cy="18" r="2" fill="#0288d1"/>
+    <circle cx="36" cy="18" r="2" fill="#0288d1"/>
+    <path d="M28 24 Q32 28 36 24" fill="none" stroke="#0288d1" stroke-width="2" stroke-linecap="round"/>
+    <!-- corpinho -->
+    <path d="M20 34 Q20 44 32 46 Q44 44 44 34 L44 34 Q44 30 32 30 Q20 30 20 34Z" fill="#b3e5fc"/>
+    <!-- +6 badge -->
+    <circle cx="48" cy="14" r="10" fill="#0288d1"/>
+    <text x="44" y="19" font-size="11" font-weight="bold" fill="#fff" font-family="sans-serif">+6</text>
+  </svg>`;
+}
+
+function svgCadIncomp() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- documento -->
+    <path d="M14 6 L42 6 L54 18 L54 58 L14 58Z" fill="#ffe0b2"/>
+    <path d="M42 6 L42 18 L54 18Z" fill="#ffcc80"/>
+    <!-- linhas de texto -->
+    <line x1="22" y1="28" x2="46" y2="28" stroke="#ff9800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="22" y1="36" x2="40" y2="36" stroke="#ff9800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="22" y1="44" x2="34" y2="44" stroke="#ffcc80" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- X de incompleto -->
+    <circle cx="46" cy="46" r="10" fill="#e65100"/>
+    <line x1="41" y1="41" x2="51" y2="51" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="51" y1="41" x2="41" y2="51" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function svgCarteirinha() {
+  return `<svg viewBox="0 0 64 64" width="40" height="40">
+    <!-- cartão / carteirinha -->
+    <rect x="8" y="16" width="48" height="34" rx="5" fill="#e0f7fa"/>
+    <rect x="8" y="16" width="48" height="12" rx="5" fill="#00838f"/>
+    <!-- seringa / vacina -->
+    <rect x="16" y="24" width="4" height="14" rx="2" fill="#fff" opacity="0.9"/>
+    <!-- texto carteirinha -->
+    <line x1="24" y1="36" x2="48" y2="36" stroke="#00838f" stroke-width="2" stroke-linecap="round"/>
+    <line x1="24" y1="42" x2="44" y2="42" stroke="#b2ebf2" stroke-width="2" stroke-linecap="round"/>
+    <!-- check de vacinação -->
+    <circle cx="46" cy="30" r="9" fill="#00838f"/>
+    <polyline points="41,30 45,34 52,26" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+// ===== MICROÁREA =====
+function renderMicroarea() {
+  const m = db.config;
+  document.getElementById('micro-nome').value = m.microarea || '';
+  document.getElementById('micro-esf').value = m.esf || '';
+  document.getElementById('micro-bairro').value = m.bairro || '';
+  document.getElementById('micro-municipio').value = m.municipio || '';
+  document.getElementById('micro-ibge').value = m.ibge || '';
+  document.getElementById('micro-cnes').value = m.cnes || '';
+  document.getElementById('micro-ruas').value = m.ruas || '';
+
+  const total = db.familias.length;
+  const alto = db.familias.filter(f => f.risco === 'alto').length;
+  document.getElementById('micro-resumo').innerHTML = `
+    <div style="display:grid;gap:8px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Famílias cadastradas</span><strong>${total}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Indivíduos</span><strong>${db.individuos.length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Famílias alto risco</span><strong style="color:var(--vermelho)">${alto}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span>Cobertura territorial</span><strong>${total > 0 ? Math.round(total/250*100) : 0}%</strong></div>
+    </div>`;
+
+  const ruas = (m.ruas || '').split(',').map(r => r.trim()).filter(Boolean);
+  document.getElementById('micro-ruas-list').innerHTML = ruas.length ?
+    ruas.map(r => `<div style="padding:6px 8px;background:var(--cinza-100);border-radius:4px;margin-bottom:4px;font-size:13px"> ${r}</div>`).join('') :
+    '<p style="font-size:13px;color:var(--cinza-500)">Nenhum logradouro cadastrado</p>';
+}
+
+function salvarMicroarea() {
+  db.config.microarea = document.getElementById('micro-nome').value;
+  db.config.esf = document.getElementById('micro-esf').value;
+  db.config.bairro = document.getElementById('micro-bairro').value;
+  db.config.municipio = document.getElementById('micro-municipio').value;
+  db.config.ibge = document.getElementById('micro-ibge').value;
+  db.config.cnes = document.getElementById('micro-cnes').value;
+  db.config.ruas = document.getElementById('micro-ruas').value;
+  save(); renderMicroarea();
+  document.getElementById('acs-area').textContent = `Microárea ${db.config.microarea} · ${db.config.esf}`;
+  toast('Microárea salva!', 'success');
+}
+
+// ===== RELATÓRIOS =====
+function renderRelatorios() {
+  const total = db.familias.length || 1;
+  document.getElementById('rel-cobertura').innerHTML = `
+    <div style="font-size:13px;display:grid;gap:8px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Total de famílias</span><strong>${db.familias.length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Total de indivíduos</span><strong>${db.individuos.length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Visitados no mês</span><strong>${[...new Set(db.visitas.filter(v => v.data?.startsWith(new Date().toISOString().slice(0,7))).map(v=>v.familiaId))].length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span>Pendências abertas</span><strong style="color:var(--vermelho)">${db.pendencias.filter(p=>!p.done).length}</strong></div>
+    </div>`;
+
+  document.getElementById('rel-vulnerabilidade').innerHTML = `
+    <div style="font-size:13px;display:grid;gap:8px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Famílias vulneráveis</span><strong>${db.familias.filter(f=>f.vulnerabilidade==='sim').length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Sem saneamento</span><strong>${db.familias.filter(f=>f.esgoto==='Céu aberto'||f.esgoto==='Fossa rudimentar').length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)"><span>Sem coleta de lixo</span><strong>${db.familias.filter(f=>f.lixo!=='Coletado').length}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span>Sem água encanada</span><strong>${db.familias.filter(f=>f.agua!=='Rede pública').length}</strong></div>
+    </div>`;
+
+  document.getElementById('rel-condicoes').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+      ${[
+        ['HAS', db.individuos.filter(i=>i.has==='sim').length, 'badge-orange'],
+        ['DM', db.individuos.filter(i=>i.dm==='sim').length, 'badge-red'],
+        ['Gestantes', db.individuos.filter(i=>i.gestante==='sim').length, 'badge-blue'],
+        ['TB/Hanseníase', db.individuos.filter(i=>i.tb!=='nao').length, 'badge-red'],
+        ['S. Mental', db.individuos.filter(i=>i.mental==='sim').length, 'badge-blue'],
+        ['Deficiência', db.individuos.filter(i=>i.deficiencia&&i.deficiencia!=='nao').length, 'badge-gray'],
+        ['Crianças <5', db.individuos.filter(i=>(new Date()-new Date(i.nasc))/(365.25*24*3600*1000)<5).length, 'badge-green'],
+        ['Idosos ≥60', db.individuos.filter(i=>(new Date()-new Date(i.nasc))/(365.25*24*3600*1000)>=60).length, 'badge-yellow'],
+      ].map(([l,n,c]) => `
+        <div class="stat-card" style="border-left:none;text-align:center">
+          <div class="stat-number">${n}</div>
+          <div class="stat-label"><span class="badge ${c}">${l}</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ===== CONFIGURAÇÕES =====
+function renderConfig() {
+  const c = db.config;
+  document.getElementById('cfg-nome').value = c.nome || '';
+  document.getElementById('cfg-cpf').value = c.cpf || '';
+  document.getElementById('cfg-cns').value = c.cns || '';
+  document.getElementById('cfg-cbo').value = c.cbo || '515105';
+  document.getElementById('cfg-esf').value = c.esf || '';
+  document.getElementById('cfg-microarea').value = c.microarea || '';
+  document.getElementById('cfg-municipio').value = c.municipio || '';
+  document.getElementById('cfg-cnes').value = c.cnes || '';
+  document.getElementById('cfg-ine').value = c.ine || '';
+}
+function salvarConfig() {
+  db.config.nome = document.getElementById('cfg-nome').value;
+  db.config.cpf = document.getElementById('cfg-cpf').value;
+  db.config.cns = document.getElementById('cfg-cns').value;
+  db.config.cbo = document.getElementById('cfg-cbo').value;
+  db.config.esf = document.getElementById('cfg-esf').value;
+  db.config.microarea = document.getElementById('cfg-microarea').value;
+  db.config.municipio = document.getElementById('cfg-municipio').value;
+  db.config.cnes = document.getElementById('cfg-cnes').value;
+  db.config.ine = document.getElementById('cfg-ine').value;
+  save();
+  document.getElementById('acs-nome').textContent = db.config.nome;
+  document.getElementById('acs-area').textContent = `Microárea ${db.config.microarea} · ${db.config.esf}`;
+  toast('Configurações salvas!', 'success');
+}
+
+// ===== MODAL FAMÍLIA =====
+let editFamiliaId = null;
+function openNovaFamilia() {
+  editFamiliaId = null;
+  document.getElementById('modal-familia-titulo').textContent = 'Nova Família';
+  ['fam-prontuario','fam-responsavel','fam-cpf','fam-cns','fam-logradouro','fam-numero','fam-complemento','fam-bairro','fam-cep','fam-referencia','fam-obs'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('fam-membros').value = 1;
+  document.getElementById('fam-nasc-resp').value = '';
+  document.getElementById('fam-risco').value = 'baixo';
+  document.getElementById('fam-vulnerabilidade').value = 'nao';
+  document.getElementById('modal-familia').classList.add('open');
+}
+function editarFamilia(id) {
+  const f = db.familias.find(x => x.id === id);
+  if (!f) return;
+  editFamiliaId = id;
+  document.getElementById('modal-familia-titulo').textContent = 'Editar Família';
+  document.getElementById('fam-prontuario').value = f.prontuario || '';
+  document.getElementById('fam-responsavel').value = f.responsavel || '';
+  document.getElementById('fam-cpf').value = f.cpf || '';
+  document.getElementById('fam-cns').value = f.cns || '';
+  document.getElementById('fam-logradouro').value = f.logradouro || '';
+  document.getElementById('fam-numero').value = f.numero || '';
+  document.getElementById('fam-complemento').value = f.complemento || '';
+  document.getElementById('fam-bairro').value = f.bairro || '';
+  document.getElementById('fam-cep').value = f.cep || '';
+  document.getElementById('fam-referencia').value = f.referencia || '';
+  document.getElementById('fam-membros').value = f.membros || 1;
+  document.getElementById('fam-risco').value = f.risco || 'baixo';
+  document.getElementById('fam-vulnerabilidade').value = f.vulnerabilidade || 'nao';
+  document.getElementById('fam-obs').value = f.obs || '';
+  ['tipo-imovel','tipo-dom','material','agua','esgoto','lixo','energia'].forEach(k => {
+    const el = document.getElementById('fam-'+k);
+    if (el && f[k]) el.value = f[k];
+  });
+  document.getElementById('modal-familia').classList.add('open');
+}
+function salvarFamilia() {
+  const resp = document.getElementById('fam-responsavel').value.trim();
+  if (!resp) { toast('Nome do responsável é obrigatório', 'error'); return; }
+  const data = {
+    responsavel: resp, cpf: document.getElementById('fam-cpf').value,
+    cns: document.getElementById('fam-cns').value, membros: parseInt(document.getElementById('fam-membros').value) || 1,
+    logradouro: document.getElementById('fam-logradouro').value, numero: document.getElementById('fam-numero').value,
+    complemento: document.getElementById('fam-complemento').value, bairro: document.getElementById('fam-bairro').value,
+    cep: document.getElementById('fam-cep').value, referencia: document.getElementById('fam-referencia').value,
+    'tipo-imovel': document.getElementById('fam-tipo-imovel').value,
+    'tipo-dom': document.getElementById('fam-tipo-dom').value,
+    material: document.getElementById('fam-material').value, agua: document.getElementById('fam-agua').value,
+    esgoto: document.getElementById('fam-esgoto').value, lixo: document.getElementById('fam-lixo').value,
+    energia: document.getElementById('fam-energia').value, risco: document.getElementById('fam-risco').value,
+    vulnerabilidade: document.getElementById('fam-vulnerabilidade').value, obs: document.getElementById('fam-obs').value,
+  };
+  if (editFamiliaId) {
+    const f = db.familias.find(x => x.id === editFamiliaId);
+    Object.assign(f, data);
+  } else {
+    const id = nextId('familia');
+    db.familias.push({ id, prontuario: 'FAM-' + String(id).padStart(4,'0'), dataCadastro: hoje(), ultimaVisita: null, ...data });
+  }
+  save(); closeModal('modal-familia'); renderFamilias(); toast(editFamiliaId ? 'Família atualizada!' : 'Família cadastrada!', 'success');
+  editFamiliaId = null;
+}
+function excluirFamilia(id) {
+  if (!confirm('Excluir esta família e seus dados?')) return;
+  db.familias = db.familias.filter(f => f.id !== id);
+  db.individuos = db.individuos.filter(i => i.familiaId !== id);
+  save(); renderFamilias(); toast('Família excluída', '');
+}
+function verFamilia(id) { editarFamilia(id); }
+
+// ===== MODAL INDIVÍDUO =====
+// ===== INDIVIDUO (vinculado à família) =====
+let editIndId = null;
+let _indFamiliaId = null;
+
+function openNovoIndividuoNaFamilia(famId) {
+  editIndId = null; _indFamiliaId = famId;
+  const f = getFamilia(famId);
+  document.getElementById('modal-ind-titulo').textContent = 'Novo Membro —';
+  document.getElementById('modal-ind-familia-nome').textContent = f ? f.responsavel+' ('+f.prontuario+')' : '';
+  document.getElementById('ind-familia-id').value = famId;
+  ['ind-nome','ind-nome-social','ind-mae','ind-cpf','ind-cns','ind-outras'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('ind-nasc').value=''; document.getElementById('ind-sexo').value='F';
+  document.getElementById('ind-raca').value='Parda'; document.getElementById('ind-nacional').value='Brasileira';
+  document.getElementById('ind-escolaridade').value='Fundamental incompleto'; document.getElementById('ind-trabalho').value='Não se aplica';
+  ['ind-has','ind-dm','ind-gestante','ind-deficiencia','ind-mental','ind-tb','ind-cancer','ind-acamado'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='nao'; });
+  renderMedicacoesList([]); renderVacinasList([]);
+  const firstTab = document.querySelector('#modal-individuo .tab');
+  if(firstTab) switchTab(firstTab,'ind-tab-dados');
+  document.getElementById('modal-individuo').classList.add('open');
+}
+
+function openNovoIndividuo() {
+  const opts = db.familias.map(f=>`<option value="${f.id}">${f.prontuario} — ${f.responsavel}</option>`).join('');
+  if (!opts) { toast('Cadastre um domicílio primeiro!','error'); return; }
+  const div = document.createElement('div');
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  div.innerHTML=`<div style="background:#fff;border-radius:10px;padding:24px;min-width:320px"><h3 style="margin-bottom:12px">Selecione o Domicílio</h3><select class="input" id="sel-familia-quick" style="width:100%;margin-bottom:12px">${opts}</select><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="this.closest('div[style]').remove()">Cancelar</button><button class="btn btn-primary" onclick="const v=document.getElementById('sel-familia-quick').value;this.closest('div[style]').remove();openNovoIndividuoNaFamilia(parseInt(v))">Confirmar</button></div></div>`;
+  document.body.appendChild(div);
+}
+
+function editarIndividuo(id) {
+  const i = db.individuos.find(x=>x.id===id); if(!i) return;
+  editIndId=id; _indFamiliaId=i.familiaId;
+  const f=getFamilia(i.familiaId);
+  document.getElementById('modal-ind-titulo').textContent='Editar Membro —';
+  document.getElementById('modal-ind-familia-nome').textContent=f?f.responsavel+' ('+f.prontuario+')':'';
+  document.getElementById('ind-familia-id').value=i.familiaId;
+  document.getElementById('ind-nome').value=i.nome||''; document.getElementById('ind-nome-social').value=i.nomeSocial||'';
+  document.getElementById('ind-mae').value=i.mae||''; document.getElementById('ind-nasc').value=i.nasc||'';
+  document.getElementById('ind-sexo').value=i.sexo||'F'; document.getElementById('ind-raca').value=i.raca||'Parda';
+  document.getElementById('ind-nacional').value=i.nacional||'Brasileira'; document.getElementById('ind-cpf').value=i.cpf||'';
+  document.getElementById('ind-cns').value=i.cns||''; document.getElementById('ind-escolaridade').value=i.escolaridade||'Fundamental incompleto';
+  document.getElementById('ind-trabalho').value=i.trabalho||'Não se aplica';
+  document.getElementById('ind-has').value=i.has||'nao'; document.getElementById('ind-dm').value=i.dm||'nao';
+  document.getElementById('ind-gestante').value=i.gestante||'nao'; document.getElementById('ind-deficiencia').value=i.deficiencia||'nao';
+  document.getElementById('ind-mental').value=i.mental||'nao'; document.getElementById('ind-tb').value=i.tb||'nao';
+  document.getElementById('ind-cancer').value=i.cancer||'nao'; document.getElementById('ind-acamado').value=i.acamado||'nao';
+  document.getElementById('ind-outras').value=i.outras||'';
+  renderMedicacoesList(i.medicacoes||[]); renderVacinasList(i.vacinas||[],i.nasc);
+  const firstTab=document.querySelector('#modal-individuo .tab');
+  if(firstTab) switchTab(firstTab,'ind-tab-dados');
+  document.getElementById('modal-individuo').classList.add('open');
+}
+
+function salvarIndividuo() {
+  const nome=document.getElementById('ind-nome').value.trim();
+  const famId=parseInt(document.getElementById('ind-familia-id').value);
+  if(!nome){toast('Nome é obrigatório','error');return;}
+  if(!famId){toast('Vincule a um domicílio','error');return;}
+  const obj={nome,familiaId:famId,nomeSocial:document.getElementById('ind-nome-social').value,mae:document.getElementById('ind-mae').value,nasc:document.getElementById('ind-nasc').value,sexo:document.getElementById('ind-sexo').value,raca:document.getElementById('ind-raca').value,nacional:document.getElementById('ind-nacional').value,cpf:document.getElementById('ind-cpf').value,cns:document.getElementById('ind-cns').value,escolaridade:document.getElementById('ind-escolaridade').value,trabalho:document.getElementById('ind-trabalho').value,has:document.getElementById('ind-has').value,dm:document.getElementById('ind-dm').value,gestante:document.getElementById('ind-gestante').value,deficiencia:document.getElementById('ind-deficiencia').value,mental:document.getElementById('ind-mental').value,tb:document.getElementById('ind-tb').value,cancer:document.getElementById('ind-cancer').value,acamado:document.getElementById('ind-acamado').value,outras:document.getElementById('ind-outras').value,medicacoes:coletarMedicacoes(),vacinas:coletarVacinas()};
+  if(editIndId){const idx=db.individuos.findIndex(x=>x.id===editIndId);if(idx>=0)db.individuos[idx]={...db.individuos[idx],...obj};}
+  else{obj.id=nextId('individuo');obj.dataCadastro=hoje();db.individuos.push(obj);}
+  const f=getFamilia(famId);if(f)f.membros=db.individuos.filter(i=>i.familiaId===famId).length;
+  save();closeModal('modal-individuo');renderFamilias();renderIndividuos();
+  toast(editIndId?'Membro atualizado!':'Membro cadastrado!','success');
+  editIndId = null;
+}
+
+function excluirIndividuo(id) {
+  if(!confirm('Excluir este membro?')) return;
+  const i=db.individuos.find(x=>x.id===id);
+  db.individuos=db.individuos.filter(x=>x.id!==id);
+  if(i){const f=getFamilia(i.familiaId);if(f)f.membros=db.individuos.filter(x=>x.familiaId===i.familiaId).length;}
+  save();renderFamilias();renderIndividuos();
+}
+
+// switchTab unificada — definida acima (funciona em modais e em páginas)
+
+// ===== MEDICAÇÕES =====
+let _tempMeds=[];
+function renderMedicacoesList(meds) {
+  _tempMeds=meds?JSON.parse(JSON.stringify(meds)):[];
+  const el=document.getElementById('lista-medicacoes'); if(!el) return;
+  if(_tempMeds.length===0){el.innerHTML='<div style="font-size:13px;color:var(--cinza-500);padding:8px 0">Nenhuma medicação cadastrada.</div>';return;}
+  el.innerHTML=_tempMeds.map((m,idx)=>`<div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;align-items:end;padding:8px;background:var(--cinza-100);border-radius:var(--radius-sm)"><div class="form-group" style="margin:0"><label style="font-size:11px">Princípio Ativo</label><input class="input" style="font-size:13px" value="${m.nome||''}" oninput="_tempMeds[${idx}].nome=this.value" placeholder="ex: Losartana"></div><div class="form-group" style="margin:0"><label style="font-size:11px">Dosagem</label><input class="input" style="font-size:13px" value="${m.dose||''}" oninput="_tempMeds[${idx}].dose=this.value" placeholder="ex: 50mg"></div><div class="form-group" style="margin:0"><label style="font-size:11px">Vezes/dia</label><select class="input" style="font-size:13px" onchange="_tempMeds[${idx}].freq=this.value">${['1x','2x','3x','4x','Conforme necessário','Semanal','Mensal'].map(o=>`<option ${m.freq===o?'selected':''}>${o}</option>`).join('')}</select></div><button class="btn btn-danger btn-sm" onclick="_tempMeds.splice(${idx},1);renderMedicacoesList(_tempMeds)" style="height:36px;margin-top:18px">✕</button></div>`).join('');
+}
+function adicionarMedicacao(){_tempMeds.push({nome:'',dose:'',freq:'1x'});renderMedicacoesList(_tempMeds);}
+function coletarMedicacoes(){return _tempMeds.filter(m=>m.nome.trim());}
+
+// ===== VACINAS =====
+const CALENDARIO_VACINAL=[
+  {nome:'BCG',doses:1,idades:['ao nascer']},
+  {nome:'Hepatite B',doses:3,idades:['ao nascer','2 meses','6 meses']},
+  {nome:'Pentavalente (DTP+Hib+HepB)',doses:3,idades:['2 meses','4 meses','6 meses']},
+  {nome:'VIP (Poliomielite inativada)',doses:3,idades:['2 meses','4 meses','6 meses']},
+  {nome:'VOP (Poliomielite oral — reforços)',doses:2,idades:['15 meses','4 anos']},
+  {nome:'Pneumocócica 10-valente',doses:3,idades:['2 meses','4 meses','12 meses (reforço)']},
+  {nome:'Rotavírus humano',doses:2,idades:['2 meses','4 meses']},
+  {nome:'Meningocócica C',doses:3,idades:['3 meses','5 meses','12 meses (reforço)']},
+  {nome:'Febre Amarela',doses:2,idades:['9 meses','4 anos (reforço)']},
+  {nome:'Tríplice Viral (SCR)',doses:2,idades:['12 meses','15 meses']},
+  {nome:'DTP (Tríplice Bacteriana — reforços)',doses:2,idades:['15 meses','4 anos']},
+  {nome:'Varicela',doses:1,idades:['15 meses']},
+  {nome:'Hepatite A',doses:1,idades:['15 meses']},
+  {nome:'HPV (meninas — SUS)',doses:2,idades:['9 anos','6 meses após 1ª dose'],feminino:true},
+  {nome:'Meningocócica ACWY',doses:1,idades:['11-12 anos']},
+  {nome:'dTpa (gestante/adolescente)',doses:1,idades:['a partir de 11 anos']},
+];
+let _tempVacinas=[];
+function renderVacinasList(vacinasExist,nasc) {
+  _tempVacinas=vacinasExist?JSON.parse(JSON.stringify(vacinasExist)):[];
+  const nascDate=nasc?new Date(nasc+'T00:00:00'):null;
+  const idadeMeses=nascDate?Math.floor((new Date()-nascDate)/(30.44*24*3600*1000)):null;
+  const idadeAnos=idadeMeses!==null?Math.floor(idadeMeses/12):null;
+  const sexo=document.getElementById('ind-sexo')?.value||'F';
+  const infoEl=document.getElementById('vacina-idade-info');
+  if(infoEl) infoEl.textContent=nascDate?`Idade: ${idadeAnos}a ${idadeMeses%12}m — Calendário Nacional PNI/SBIm (clique nas doses para marcar/desmarcar)`:'Informe a data de nascimento.';
+  const el=document.getElementById('calendario-vacina'); if(!el) return;
+  const vacToShow=CALENDARIO_VACINAL.filter(v=>!v.feminino||sexo==='F');
+  CALENDARIO_VACINAL.forEach(vac=>{if(!_tempVacinas.find(x=>x.nome===vac.nome))_tempVacinas.push({nome:vac.nome,doses:[]});});
+  el.innerHTML=vacToShow.map(vac=>{
+    const regIdx=_tempVacinas.findIndex(x=>x.nome===vac.nome);
+    const registro=_tempVacinas[regIdx]||{nome:vac.nome,doses:[]};
+    return `<div style="padding:10px;background:#fff;border:1px solid var(--cinza-200);border-radius:var(--radius-sm)"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;font-weight:600">${vac.nome}</span><span style="font-size:11px;color:var(--cinza-500)">${vac.doses} dose(s)</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">${vac.idades.map((idade,di)=>{const doseReg=registro.doses?registro.doses[di]:null;const aplicada=doseReg&&doseReg.data;return `<div style="padding:6px 10px;background:${aplicada?'var(--verde-fraco)':'var(--vermelho-fraco)'};border:1px solid ${aplicada?'var(--verde-claro)':'var(--vermelho)'};border-radius:4px;font-size:11px;cursor:pointer" onclick="toggleDoseVacina(${regIdx},${di})"><div style="font-weight:600">D${di+1}: ${idade}</div><div>${aplicada?'✓ '+formatData(doseReg.data):'Pendente'}</div></div>`;}).join('')}</div></div>`;
+  }).join('');
+}
+function toggleDoseVacina(regIdx,doseIdx) {
+  if(!_tempVacinas[regIdx].doses)_tempVacinas[regIdx].doses=[];
+  const dose=_tempVacinas[regIdx].doses[doseIdx];
+  _tempVacinas[regIdx].doses[doseIdx]=dose&&dose.data?{data:null}:{data:hoje()};
+  renderVacinasList(_tempVacinas,document.getElementById('ind-nasc').value);
+}
+function atualizarVacinasPorIdade(){renderVacinasList(_tempVacinas,document.getElementById('ind-nasc').value);}
+function coletarVacinas(){return JSON.parse(JSON.stringify(_tempVacinas));}
+
+// ===== VISITAS =====
+function openNovaVisita() {
+  populateFamiliaSelects();
+  document.getElementById('vis-data').value=hoje();
+  document.getElementById('vis-turno').value=new Date().getHours()<12?'manha':'tarde';
+  document.getElementById('vis-obs').value=''; document.getElementById('vis-pendencia').value='';
+  const r=document.querySelector('input[name="vis-escopo"][value="familia"]');if(r)r.checked=true;
+  toggleVisitaEscopo(); renderMembrosList();
+  document.getElementById('modal-visita').classList.add('open');
+}
+function toggleVisitaEscopo() {
+  const escopo=document.querySelector('input[name="vis-escopo"]:checked')?.value;
+  const wrap=document.getElementById('vis-membro-wrap');
+  if(wrap) wrap.style.display=escopo==='individuo'?'':'none';
+}
+function renderMembrosList() {
+  const famId=parseInt(document.getElementById('vis-familia')?.value);
+  const sel=document.getElementById('vis-membro'); if(!sel) return;
+  const membros=db.individuos.filter(i=>i.familiaId===famId);
+  sel.innerHTML=membros.length?membros.map(m=>`<option value="${m.id}">${m.nome} (${calcIdade(m.nasc)})</option>`).join(''):'<option value="">Nenhum membro cadastrado</option>';
+}
+function registrarVisitaRapida(famId) {
+  populateFamiliaSelects();
+  document.getElementById('vis-data').value=hoje();
+  document.getElementById('vis-turno').value=new Date().getHours()<12?'manha':'tarde';
+  document.getElementById('vis-familia').value=famId;
+  document.getElementById('vis-obs').value=''; document.getElementById('vis-pendencia').value='';
+  const r=document.querySelector('input[name="vis-escopo"][value="familia"]');if(r)r.checked=true;
+  toggleVisitaEscopo(); renderMembrosList();
+  document.getElementById('modal-visita').classList.add('open');
+}
+function salvarVisita() {
+  const data=document.getElementById('vis-data').value;
+  const famId=parseInt(document.getElementById('vis-familia').value);
+  const turno=document.getElementById('vis-turno').value;
+  const escopo=document.querySelector('input[name="vis-escopo"]:checked')?.value||'familia';
+  const membroId=escopo==='individuo'?parseInt(document.getElementById('vis-membro').value):null;
+  const tipo=document.getElementById('vis-tipo').value;
+  const desfecho=document.getElementById('vis-desfecho').value;
+  const vacina=document.getElementById('vis-vacina').value;
+  const encam=document.getElementById('vis-encam').value;
+  const obs=document.getElementById('vis-obs').value;
+  const pendTxt=document.getElementById('vis-pendencia').value.trim();
+  if(!data||!famId){toast('Preencha data e domicílio','error');return;}
+  db.visitas.push({id:nextId('visita'),data,familiaId:famId,turno,escopo,membroId,tipo,desfecho,vacina,encam,obs});
+  // Atualiza ultimaVisita independente do escopo (família ou indivíduo)
+  const _fAtual=getFamilia(famId);if(_fAtual&&(!_fAtual.ultimaVisita||data>_fAtual.ultimaVisita))_fAtual.ultimaVisita=data;
+  if(pendTxt){db.pendencias.push({id:nextId('pendencia'),titulo:pendTxt,tipo:'visita',prioridade:'media',familiaId:famId,prazo:data,obs:'Gerada em visita',done:false,criado:hoje()});}
+  save();closeModal('modal-visita');renderFamilias();renderVisitas();updateBadge();
+  toast('Visita registrada!','success');
+}
+
+// ===== MODAL PENDÊNCIA =====
+function openNovaPendencia() {
+  populateFamiliaSelects();
+  document.getElementById('pend-titulo').value = '';
+  document.getElementById('pend-obs').value = '';
+  document.getElementById('pend-prazo').value = '';
+  document.getElementById('modal-pendencia').classList.add('open');
+}
+function salvarPendencia() {
+  const titulo = document.getElementById('pend-titulo').value.trim();
+  if (!titulo) { toast('Descreva a pendência', 'error'); return; }
+  db.pendencias.push({
+    id: nextId('pendencia'), titulo, tipo: document.getElementById('pend-tipo').value,
+    prioridade: document.getElementById('pend-prioridade').value,
+    familiaId: parseInt(document.getElementById('pend-familia').value) || null,
+    prazo: document.getElementById('pend-prazo').value,
+    obs: document.getElementById('pend-obs').value, done:false, criado:hoje()
+  });
+  save(); closeModal('modal-pendencia'); renderPendencias(); updateBadge(); toast('Pendência criada!', 'success');
+}
+
+// ===== EXPORTAR =====
+function exportarDados(tipo) {
+  let content = '', filename = '', mime = 'text/csv;charset=utf-8;';
+  const bom = '\uFEFF';
+
+  if (tipo === 'familias-csv') {
+    const h = 'Prontuario,Responsavel,CPF,CNS,Logradouro,Numero,Bairro,Membros,Risco,UltimaVisita,Agua,Esgoto,Lixo,Observacoes\n';
+    content = bom + h + db.familias.map(f =>
+      `"${f.prontuario}","${f.responsavel}","${f.cpf||''}","${f.cns||''}","${f.logradouro||''}","${f.numero||''}","${f.bairro||''}",${f.membros},"${f.risco}","${f.ultimaVisita||''}","${f.agua||''}","${f.esgoto||''}","${f.lixo||''}","${f.obs||''}"`
+    ).join('\n');
+    filename = 'familias_acs.csv';
+  } else if (tipo === 'individuos-csv') {
+    const h = 'ID,Nome,NomeSocial,CNS,CPF,Nascimento,Sexo,Raca,Familia,HAS,DM,Gestante,Deficiencia,SaudeMental,TB\n';
+    content = bom + h + db.individuos.map(i => {
+      const f = getFamilia(i.familiaId);
+      return `${i.id},"${i.nome}","${i.nomeSocial||''}","${i.cns||''}","${i.cpf||''}","${i.nasc||''}","${i.sexo}","${i.raca||''}","${f?f.responsavel:''}","${i.has}","${i.dm}","${i.gestante}","${i.deficiencia}","${i.mental}","${i.tb}"`;
+    }).join('\n');
+    filename = 'individuos_acs.csv';
+  } else if (tipo === 'visitas-csv') {
+    const h = 'ID,Data,Familia,CNS_ACS,CBO,Tipo,Desfecho,Vacina,Encaminhamento,Observacoes\n';
+    content = bom + h + db.visitas.map(v => {
+      const f = getFamilia(v.familiaId);
+      return `${v.id},"${v.data}","${f?f.responsavel:''}","${db.config.cns||''}","${db.config.cbo||'515105'}","${v.tipo}","${v.desfecho}","${v.vacina}","${v.encam}","${v.obs||''}"`;
+    }).join('\n');
+    filename = 'fichas_visita_acs.csv';
+  } else if (tipo === 'risco-csv') {
+    const h = 'Prontuario,Familia,Risco,FatoresRisco,UltimaAvaliacao\n';
+    content = bom + h + db.familias.map(f => {
+      const inds = db.individuos.filter(i => i.familiaId === f.id);
+      const fat = [];
+      if (inds.some(i=>i.has==='sim')) fat.push('HAS');
+      if (inds.some(i=>i.dm==='sim')) fat.push('DM');
+      if (inds.some(i=>i.gestante==='sim')) fat.push('Gestante');
+      if (f.vulnerabilidade==='sim') fat.push('Vulnerabilidade');
+      return `"${f.prontuario}","${f.responsavel}","${f.risco}","${fat.join(';')}","${hoje()}"`;
+    }).join('\n');
+    filename = 'estratificacao_risco.csv';
+  } else if (tipo === 'cronicos-csv') {
+    const h = 'Nome,CNS,CPF,Nascimento,Sexo,HAS,DM,Gestante,SaudeMental,TB,Deficiencia,Familia\n';
+    const cron = db.individuos.filter(i => i.has==='sim'||i.dm==='sim'||i.gestante==='sim'||i.mental==='sim'||i.tb!=='nao');
+    content = bom + h + cron.map(i => {
+      const f = getFamilia(i.familiaId);
+      return `"${i.nome}","${i.cns||''}","${i.cpf||''}","${i.nasc||''}","${i.sexo}","${i.has}","${i.dm}","${i.gestante}","${i.mental}","${i.tb}","${i.deficiencia}","${f?f.responsavel:''}"`;
+    }).join('\n');
+    filename = 'condicoes_cronicas.csv';
+  } else if (tipo === 'pendencias-csv') {
+    const h = 'ID,Titulo,Tipo,Prioridade,Familia,Prazo,Status,Observacoes\n';
+    content = bom + h + db.pendencias.map(p =>
+      `${p.id},"${p.titulo}","${p.tipo}","${p.prioridade}","${getFamiliaLabel(p.familiaId)}","${p.prazo||''}","${p.done?'Resolvida':'Aberta'}","${p.obs||''}"`
+    ).join('\n');
+    filename = 'pendencias_acs.csv';
+  } else if (tipo === 'producao-csv') {
+    const mesAtual = new Date().toISOString().slice(0,7);
+    const h = 'Competencia,ACS,CBO,CNS_ACS,CNES,Microarea,TotalVisitas,Cadastros,Encaminhamentos,Alto_Risco,Medio_Risco,Baixo_Risco\n';
+    const visMes = db.visitas.filter(v=>v.data?.startsWith(mesAtual));
+    content = bom + h + `"${mesAtual}","${db.config.nome}","${db.config.cbo||'515105'}","${db.config.cns||''}","${db.config.cnes||''}","${db.config.microarea||''}",${visMes.length},${db.familias.filter(f=>f.dataCadastro?.startsWith(mesAtual)).length},${visMes.filter(v=>v.encam==='sim').length},${db.familias.filter(f=>f.risco==='alto').length},${db.familias.filter(f=>f.risco==='medio').length},${db.familias.filter(f=>f.risco==='baixo').length}`;
+    filename = 'producao_mensal_acs.csv';
+  } else if (tipo === 'json-backup') {
+    content = JSON.stringify(db, null, 2);
+    filename = `backup_acs_${hoje()}.json`;
+    mime = 'application/json';
+  }
+
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exportado: ${filename}`, 'success');
+}
+
+function importarBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.familias || !data.individuos) { toast('Arquivo inválido', 'error'); return; }
+      db = data;
+      save();
+      toast('Backup restaurado com sucesso!', 'success');
+      renderDashboard();
+    } catch { toast('Erro ao importar backup', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+function limparTudo() {
+  db.familias = []; db.individuos = []; db.visitas = []; db.agenda = []; db.pendencias = [];
+  db._nextId = { familia:1, individuo:1, visita:1, agenda:1, pendencia:1 };
+  save(); renderDashboard(); toast('Todos os dados apagados', '');
+}
+
+// ===== METAS =====
+let metasMesOffset = 0;
+
+function salvarMetas() {
+  db.metas = db.metas || {};
+  db.metas.manha    = parseInt(document.getElementById('meta-manha')?.value) || 5;
+  db.metas.tarde    = parseInt(document.getElementById('meta-tarde')?.value) || 5;
+  db.metas.sabado   = document.getElementById('meta-sabado')?.value  || 'nao';
+  db.metas.domingo  = document.getElementById('meta-domingo')?.value || 'nao';
+  save();
+}
+
+function getDiasDoMes(ano, mes) {
+  // Retorna array de objetos {data, diaSemana, tipo:'util'|'sabado'|'domingo'}
+  const dias = [];
+  const totalDias = new Date(ano, mes + 1, 0).getDate();
+  for (let d = 1; d <= totalDias; d++) {
+    const dt = new Date(ano, mes, d);
+    const ds = dt.getDay(); // 0=dom,6=sab
+    dias.push({ dia: d, data: `${ano}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,
+      diaSemana: ds, tipo: ds === 0 ? 'domingo' : ds === 6 ? 'sabado' : 'util' });
+  }
+  return dias;
+}
+
+function metaDiaVisitas(tipoDia) {
+  const m = db.metas || {};
+  if (tipoDia === 'util')    return (m.manha||5) + (m.tarde||5);
+  if (tipoDia === 'sabado')  return m.sabado  === 'sim' ? (m.manha||5) + (m.tarde||5) : 0;
+  if (tipoDia === 'domingo') return m.domingo === 'sim' ? (m.manha||5) + (m.tarde||5) : 0;
+  return 0;
+}
+
+function renderMetas() {
+  const m = db.metas || {};
+  // Preenche campos
+  const mEl = document.getElementById('meta-manha');
+  const tEl = document.getElementById('meta-tarde');
+  const sEl = document.getElementById('meta-sabado');
+  const dEl = document.getElementById('meta-domingo');
+  if (mEl && !mEl.dataset.editing) mEl.value = m.manha || 5;
+  if (tEl && !tEl.dataset.editing) tEl.value = m.tarde || 5;
+  if (sEl) sEl.value = m.sabado  || 'nao';
+  if (dEl) dEl.value = m.domingo || 'nao';
+
+  const agora = new Date();
+  const refDate = new Date(agora.getFullYear(), agora.getMonth() + metasMesOffset, 1);
+  const ano = refDate.getFullYear();
+  const mes = refDate.getMonth();
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mesesCurtos = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const nomeMes = meses[mes];
+  const chaveCompetencia = `${ano}-${String(mes+1).padStart(2,'0')}`;
+
+  const navEl = document.getElementById('metas-nav-label');
+  const mesLabelEl = document.getElementById('metas-mes-label');
+  if (navEl) navEl.textContent = `${nomeMes} ${ano}`;
+  if (mesLabelEl) mesLabelEl.textContent = `${nomeMes} ${ano}`;
+
+  const dias = getDiasDoMes(ano, mes);
+  const diasAtivos = dias.filter(d => metaDiaVisitas(d.tipo) > 0);
+  const metaMensal = diasAtivos.reduce((acc, d) => acc + metaDiaVisitas(d.tipo), 0);
+
+  const calcEl = document.getElementById('meta-calc');
+  const descEl = document.getElementById('meta-calc-desc');
+  if (calcEl) calcEl.textContent = metaMensal;
+  if (descEl) descEl.textContent = `${diasAtivos.length} dias × meta diária variável (M:${m.manha||5} + T:${m.tarde||5})`;
+
+  // Visitas realizadas no mês
+  const visMes = db.visitas.filter(v => (v.data||'').startsWith(chaveCompetencia) && v.escopo !== 'individuo');
+  const visitasPorDia = {};
+  visMes.forEach(v => { visitasPorDia[v.data] = (visitasPorDia[v.data]||0) + 1; });
+
+  // Ajustes manuais de meta por dia
+  db.metasAjustes = db.metasAjustes || {};
+
+  // Resumo
+  const totalRealizadas = visMes.length;
+  const pctMeta = metaMensal > 0 ? Math.round(totalRealizadas/metaMensal*100) : 0;
+  const hoje_str = hoje();
+  // Déficit acumulado até hoje
+  let deficit = 0;
+  const diasPassados = dias.filter(d => d.data <= hoje_str && metaDiaVisitas(d.tipo) > 0);
+  diasPassados.forEach(d => {
+    const meta = db.metasAjustes[d.data] !== undefined ? db.metasAjustes[d.data] : metaDiaVisitas(d.tipo);
+    const real = visitasPorDia[d.data] || 0;
+    if (real < meta) deficit += (meta - real);
+  });
+
+  const resumoEl = document.getElementById('metas-resumo');
+  if (resumoEl) {
+    const cor = pctMeta >= 80 ? 'var(--verde)' : pctMeta >= 50 ? 'var(--amarelo)' : 'var(--vermelho)';
+    resumoEl.innerHTML = `
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:42px;font-weight:800;color:${cor};font-family:'IBM Plex Mono'">${totalRealizadas}</div>
+        <div style="font-size:13px;color:var(--cinza-700)">visitas realizadas de <strong>${metaMensal}</strong> (${pctMeta}%)</div>
+        <div style="margin-top:8px"><div class="progress-bar" style="height:10px"><div class="progress-fill ${pctMeta>=80?'':pctMeta>=50?'amarelo':'vermelho'}" style="width:${Math.min(100,pctMeta)}%"></div></div></div>
+      </div>
+      <div style="display:grid;gap:6px;font-size:13px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)">
+          <span>Dias úteis com meta</span><strong>${diasAtivos.length}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)">
+          <span>Dias com visita</span><strong>${Object.keys(visitasPorDia).filter(d=>d.startsWith(chaveCompetencia)).length}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--cinza-100)">
+          <span>Visitas faltando</span><strong style="color:${deficit>0?'var(--vermelho)':'var(--verde)'}">${Math.max(0,metaMensal-totalRealizadas)}</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0">
+          <span>Déficit acumulado</span><strong style="color:${deficit>0?'var(--vermelho)':'var(--verde)'}">${deficit}</strong>
+        </div>
+      </div>`;
+  }
+
+  // ===== CALENDÁRIO =====
+  const calEl = document.getElementById('metas-calendario');
+  if (!calEl) return;
+
+  const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const primeiroDia = new Date(ano, mes, 1).getDay();
+
+  let html = `<div class="cal-grid">`;
+  // Cabeçalho
+  diasSemana.forEach(d => { html += `<div class="cal-header-cell">${d}</div>`; });
+
+  // Células vazias iniciais
+  for (let i = 0; i < primeiroDia; i++) html += `<div class="cal-cell inativo"></div>`;
+
+  dias.forEach(d => {
+    const metaPadrao = metaDiaVisitas(d.tipo);
+    const metaAjust  = db.metasAjustes[d.data] !== undefined ? db.metasAjustes[d.data] : metaPadrao;
+    const real       = visitasPorDia[d.data] || 0;
+    const isFds      = d.tipo === 'sabado' || d.tipo === 'domingo';
+    const isHoje     = d.data === hoje_str;
+    const isFuturo   = d.data > hoje_str;
+    const isAtivo    = metaAjust > 0;
+
+    let cls = 'cal-cell';
+    if (isHoje) cls += ' hoje';
+    else if (isFds && metaAjust === 0) cls += ' fds';
+
+    if (isAtivo && !isFuturo) {
+      if (real >= metaAjust)      cls += ' meta-ok';
+      else if (real > 0)          cls += ' meta-parcial';
+      else if (!isHoje)           cls += ' meta-zero';
+    }
+    // folga personalizada
+    const isFolga = db.metasAjustes[d.data] === 0;
+    if (isFolga) cls += ' inativo';
+
+    const metaLabel = isFolga ? 'Folga' : isAtivo ? `meta: ${metaAjust}` : 'sem meta';
+    const realLabel = real > 0 ? `<span class="cal-visitas" style="color:${real>=metaAjust?'var(--verde)':real>0?'var(--amarelo)':'var(--cinza-500)'}">${real} vis.</span>` : '';
+    const turnoManha = (m.manha||5);
+    const turnoTarde  = (m.tarde||5);
+
+    html += `<div class="${cls}" onclick="abrirAjusteDia('${d.data}',${metaAjust},${real})" title="Clique para ajustar meta deste dia" style="cursor:pointer">
+      <div class="cal-day-num">${d.dia}</div>
+      ${realLabel}
+      <div class="cal-meta-ind" style="${isFolga?'color:var(--cinza-500);font-style:italic':''}'">${metaLabel}</div>
+      ${isAtivo && !isFolga ? `
+      <div class="cal-turno-btns">
+        <span class="cal-turno-btn manha ${real>0?'ativo':''}" title="Manhã: meta ${turnoManha}">M:${turnoManha}</span>
+        <span class="cal-turno-btn tarde ${real>=turnoManha?'ativo':''}" title="Tarde: meta ${turnoTarde}">T:${turnoTarde}</span>
+      </div>` : ''}
+    </div>`;
+  });
+
+  // Completar última linha
+  const totalCelulas = primeiroDia + dias.length;
+  const restantes = (7 - (totalCelulas % 7)) % 7;
+  for (let i = 0; i < restantes; i++) html += `<div class="cal-cell inativo"></div>`;
+  html += `</div>`;
+  calEl.innerHTML = html;
+
+  // Alertas de déficit
+  const alertaEl = document.getElementById('metas-alerta');
+  if (!alertaEl) return;
+  const diasComDeficit = diasPassados
+    .map(d => {
+      const meta = db.metasAjustes[d.data] !== undefined ? db.metasAjustes[d.data] : metaDiaVisitas(d.tipo);
+      const real = visitasPorDia[d.data] || 0;
+      return { data: d.data, falta: meta - real, meta, real };
+    })
+    .filter(x => x.falta > 0)
+    .sort((a,b) => b.falta - a.falta);
+
+  if (diasComDeficit.length === 0) {
+    alertaEl.innerHTML = `<div class="notif notif-ok"><div class="notif-icon" style="font-size:18px">✓</div><div class="notif-text"><h4>Meta em dia!</h4><p>Nenhum déficit de visitas até hoje.</p></div></div>`;
+  } else {
+    const diasRestantesAtivos = dias.filter(d => d.data > hoje_str && metaDiaVisitas(d.tipo) > 0);
+    const totalFaltando = metaMensal - totalRealizadas;
+    const mediaNecess = diasRestantesAtivos.length > 0
+      ? Math.ceil(totalFaltando / diasRestantesAtivos.length)
+      : totalFaltando;
+
+    alertaEl.innerHTML = `
+      <div class="card">
+        <div class="card-title" style="color:var(--vermelho)">Alerta de Déficit — ${diasComDeficit.length} dia(s) abaixo da meta</div>
+        ${diasComDeficit.slice(0,5).map(x =>
+          `<div class="deficit-item">
+            <span><strong>${formatData(x.data)}</strong> — ${x.real} de ${x.meta} visitas</span>
+            <span style="color:var(--vermelho);font-weight:700">–${x.falta}</span>
+          </div>`
+        ).join('')}
+        ${diasRestantesAtivos.length > 0 ? `
+        <div style="margin-top:12px;padding:12px;background:var(--amarelo-fraco);border-radius:var(--radius-sm);font-size:13px">
+          Para atingir a meta mensal, você precisa fazer em média
+          <strong style="color:var(--laranja)">${mediaNecess} visitas/dia</strong>
+          nos <strong>${diasRestantesAtivos.length}</strong> dias úteis restantes.
+        </div>` : `<div style="margin-top:8px;font-size:13px;color:var(--vermelho)">Não há mais dias úteis neste mês para recuperar o déficit.</div>`}
+      </div>`;
+  }
+}
+
+function abrirAjusteDia(data, metaAtual, realizado) {
+  // Build inline overlay for day adjustment
+  const d = document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  d.innerHTML=`<div style="background:#fff;border-radius:10px;padding:24px;min-width:300px;max-width:380px">
+    <h3 style="margin-bottom:4px;font-size:15px">Ajustar — ${formatData(data)}</h3>
+    <p style="font-size:12px;color:var(--cinza-500);margin-bottom:16px">Meta atual: <strong>${metaAtual}</strong> | Realizadas: <strong>${realizado}</strong></p>
+    <div style="display:grid;gap:10px">
+      <div class="form-group" style="margin:0">
+        <label style="font-size:12px">Nova meta de visitas para este dia</label>
+        <input class="input" type="number" id="ajuste-meta-val" value="${metaAtual}" min="0" max="30" placeholder="0 = folga">
+        <div style="font-size:11px;color:var(--cinza-500);margin-top:3px">Digite 0 para marcar como folga (dia sem meta)</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="ajuste-folga" ${metaAtual===0?'checked':''} onchange="document.getElementById('ajuste-meta-val').value=this.checked?'0':document.getElementById('ajuste-meta-val').value||'${metaAtual}'">
+        Marcar como <strong>Folga</strong> (não conta na meta)
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-secondary" onclick="this.closest('div[style]').remove()">Cancelar</button>
+      <button class="btn btn-primary" onclick="
+        const v = document.getElementById('ajuste-folga').checked ? 0 : parseInt(document.getElementById('ajuste-meta-val').value)||0;
+        this.closest('div[style]').remove();
+        confirmarAjusteDia('${data}',v);
+      ">Confirmar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+function confirmarAjusteDia(data, novoVal) {
+  db.metasAjustes = db.metasAjustes || {};
+  db.metasAjustes[data] = novoVal;
+  save(); renderMetas();
+  toast(novoVal === 0 ? `${formatData(data)} marcado como folga` : `Meta do dia ${formatData(data)}: ${novoVal} visitas`, 'success');
+}
+
+// ===== INIT =====
+// db.metas e db.metasAjustes já inicializados logo após load()
+document.getElementById('acs-nome').textContent = db.config.nome || 'ACS';
+document.getElementById('acs-area').textContent = `Microárea ${db.config.microarea||'–'} · ${db.config.esf||'ESF'}`;
+updateBadge();
+renderDashboard();
+</script>
+</body>
+</html>
