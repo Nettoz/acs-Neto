@@ -1,0 +1,1129 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ACS Neto — styles-tablet.css   v1.0
+   Modo Tablet — resolução fixa 601 × 967 px (portrait 8")
+
+   HIERARQUIA DE TOKENS (ordem de dependência):
+   ┌─ 1. DIMENSÕES DO FRAME       → --tab-w, --tab-h
+   ├─ 2. LAYOUT ESTRUTURAL        → --tab-topbar-h, --tab-sidebar-w, --tab-content-h
+   ├─ 3. ESCALA TIPOGRÁFICA       → --tab-text-*
+   ├─ 4. ESCALA DE ESPAÇAMENTO    → --tab-sp-*
+   ├─ 5. ESCALA DE RAIOS          → --tab-r-*
+   ├─ 6. ALTURAS DE COMPONENTES   → --tab-h-*
+   ├─ 7. ÍCONES                   → --tab-icon-*
+   ├─ 8. PADDING SEMÂNTICO        → --tab-p-*
+   ├─ 9. SOMBRAS                  → --tab-sh-*
+   └─ 10. COMPONENTES             → regras CSS por elemento
+
+   Escopo: TODAS as regras usam [data-modo="tablet"] como raiz.
+   Zero impacto no modo PC — este arquivo só tem efeito quando
+   o atributo data-modo="tablet" estiver presente no <html>.
+   ══════════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   1. TOKENS GLOBAIS DO MODO TABLET
+   Definidos em [data-modo="tablet"] para sobrescrever :root sem conflito
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] {
+
+  /* ─ 1. Dimensões do frame ─────────────────────────────────────── */
+  --tab-w:          601px;
+  --tab-h:          967px;
+
+  /* ─ 2. Layout estrutural ──────────────────────────────────────── */
+  --tab-topbar-h:    48px;   /* topbar compacta */
+  --tab-sidebar-w:  240px;   /* sidebar overlay — não empurra conteúdo */
+  --tab-content-h:  calc(var(--tab-h) - var(--tab-topbar-h));  /* 919px */
+
+  /* ─ 3. Tipografia — escala proporcional a 601px ───────────────── */
+  --tab-text-2xs:   10px;   /* badges nano, nav-badge                  */
+  --tab-text-xs:    12px;   /* captions, legendas, tooltips, muted      */
+  --tab-text-sm:    13px;   /* labels, chips, btn-sm, placeholder       */
+  --tab-text-base:  14px;   /* corpo, inputs, nav-item, td              */
+  --tab-text-md:    16px;   /* card-title, modal h2, section label      */
+  --tab-text-lg:    18px;   /* topbar-title, heading de página          */
+  --tab-text-xl:    22px;   /* sub-display, rua-nome, info-card         */
+  --tab-text-2xl:   28px;   /* display names, dashboard hero            */
+
+  /* ─ 4. Espaçamento — escala compacta touch-friendly ──────────── */
+  --tab-sp-1:   4px;    /* micro — separadores, badges internos         */
+  --tab-sp-2:   8px;    /* xs — ícone↔texto, gap interno de chip        */
+  --tab-sp-3:  12px;    /* sm — gap entre elementos de formulário       */
+  --tab-sp-4:  14px;    /* md — padding interno de card, gap de grid    */
+  --tab-sp-5:  16px;    /* lg — padding de content, gap de seção        */
+  --tab-sp-6:  20px;    /* xl — padding de modal, margens grandes       */
+  --tab-sp-8:  26px;    /* 2xl — padding de login, seções hero          */
+
+  /* ─ 5. Border radius ──────────────────────────────────────────── */
+  --tab-r-xs:    3px;
+  --tab-r-sm:    7px;
+  --tab-r-md:   10px;
+  --tab-r-lg:   14px;
+  --tab-r-xl:   20px;
+  --tab-r-full: 9999px;
+
+  /* ─ 6. Alturas de componentes ─────────────────────────────────── */
+  --tab-h-btn:    40px;   /* botão padrão — touch-friendly              */
+  --tab-h-btn-sm: 30px;   /* botão pequeno (tabelas, badges)            */
+  --tab-h-btn-lg: 48px;   /* botão grande                               */
+  --tab-h-input:  38px;   /* input, select, textarea linha única        */
+  --tab-h-nav:    42px;   /* nav-item na sidebar                        */
+  --tab-h-tab:    36px;   /* tab horizontal                             */
+  --tab-h-chip:   26px;   /* chips de filtro                            */
+  --tab-h-badge:  20px;   /* badges de status                           */
+
+  /* ─ 7. Ícones ─────────────────────────────────────────────────── */
+  --tab-icon-xs:  16px;   /* ícones inline em texto                     */
+  --tab-icon-sm:  20px;   /* ícones em botões, badges                   */
+  --tab-icon-md:  24px;   /* ícones de nav, ícones padrão               */
+  --tab-icon-lg:  30px;   /* ícones de card, destaques                  */
+  --tab-icon-xl:  42px;   /* ícones hero, avatares grandes              */
+
+  /* ─ 8. Padding semântico ──────────────────────────────────────── */
+  --tab-p-btn:     0 var(--tab-sp-3);           /* 0 12px               */
+  --tab-p-btn-sm:  0 var(--tab-sp-2);           /* 0 8px                */
+  --tab-p-btn-lg:  0 var(--tab-sp-4);           /* 0 14px               */
+  --tab-p-input:   var(--tab-sp-2) var(--tab-sp-3); /* 8px 12px         */
+  --tab-p-card:    var(--tab-sp-4);             /* 14px                 */
+  --tab-p-content: var(--tab-sp-3) var(--tab-sp-4); /* 12px 14px        */
+  --tab-p-modal:   var(--tab-sp-4);             /* 14px                 */
+  --tab-p-nav:     0 var(--tab-sp-2);           /* 0 8px                */
+
+  /* ─ 9. Sombras ────────────────────────────────────────────────── */
+  --tab-sh-xs:  0 1px 2px rgba(0,0,0,.35);
+  --tab-sh-sm:  0 2px 6px rgba(0,0,0,.45);
+  --tab-sh-md:  0 4px 14px rgba(0,0,0,.55);
+  --tab-sh-lg:  0 8px 28px rgba(0,0,0,.65);
+  --tab-sh-xl:  0 16px 48px rgba(0,0,0,.75);
+
+  /* ─ Aplica tokens aos aliases globais usados pelos componentes ── */
+  /* Tipografia */
+  --text-2xs:  var(--tab-text-2xs);
+  --text-xs:   var(--tab-text-xs);
+  --text-sm:   var(--tab-text-sm);
+  --text-base: var(--tab-text-base);
+  --text-md:   var(--tab-text-md);
+  --text-lg:   var(--tab-text-lg);
+  --text-xl:   var(--tab-text-xl);
+  --text-2xl:  var(--tab-text-2xl);
+
+  /* Espaçamento */
+  --sp-1: var(--tab-sp-1);
+  --sp-2: var(--tab-sp-2);
+  --sp-3: var(--tab-sp-3);
+  --sp-4: var(--tab-sp-4);
+  --sp-5: var(--tab-sp-5);
+  --sp-6: var(--tab-sp-6);
+  --sp-8: var(--tab-sp-8);
+
+  /* Raios */
+  --r-xs:   var(--tab-r-xs);
+  --r-sm:   var(--tab-r-sm);
+  --r-md:   var(--tab-r-md);
+  --r-lg:   var(--tab-r-lg);
+  --r-xl:   var(--tab-r-xl);
+  --r-full: var(--tab-r-full);
+  --radius-sm: var(--tab-r-sm);
+  --radius-md: var(--tab-r-md);
+  --radius-lg: var(--tab-r-lg);
+
+  /* Alturas */
+  --h-btn:    var(--tab-h-btn);
+  --h-btn-sm: var(--tab-h-btn-sm);
+  --h-btn-lg: var(--tab-h-btn-lg);
+  --h-input:  var(--tab-h-input);
+  --h-nav:    var(--tab-h-nav);
+  --h-tab:    var(--tab-h-tab);
+  --h-chip:   var(--tab-h-chip);
+  --h-badge:  var(--tab-h-badge);
+
+  /* Ícones */
+  --icon-xs: var(--tab-icon-xs);
+  --icon-sm: var(--tab-icon-sm);
+  --icon-md: var(--tab-icon-md);
+  --icon-lg: var(--tab-icon-lg);
+  --icon-xl: var(--tab-icon-xl);
+
+  /* Padding semântico */
+  --p-btn:     var(--tab-p-btn);
+  --p-btn-sm:  var(--tab-p-btn-sm);
+  --p-btn-lg:  var(--tab-p-btn-lg);
+  --p-input:   var(--tab-p-input);
+  --p-card:    var(--tab-p-card);
+  --p-content: var(--tab-p-content);
+  --p-modal:   var(--tab-p-modal);
+  --p-nav:     var(--tab-p-nav);
+
+  /* Sombras */
+  --sh-xs: var(--tab-sh-xs);
+  --sh-sm: var(--tab-sh-sm);
+  --sh-md: var(--tab-sh-md);
+  --sh-lg: var(--tab-sh-lg);
+  --sh-xl: var(--tab-sh-xl);
+  --shadow-sm: var(--tab-sh-sm);
+  --shadow-md: var(--tab-sh-md);
+  --shadow-lg: var(--tab-sh-lg);
+
+  /* Layout */
+  --sidebar-w: var(--tab-sidebar-w);
+  --topbar-h:  var(--tab-topbar-h);
+  --h-topbar:  var(--tab-topbar-h);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   2. FRAME — .app confinado a 601×967
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #080808 100%);
+}
+
+[data-modo="tablet"] body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255,117,51,.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 50%, rgba(132,69,204,.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-modo="tablet"] .app {
+  width:  var(--tab-w) !important;
+  height: var(--tab-h) !important;
+  min-width:  var(--tab-w) !important;
+  min-height: var(--tab-h) !important;
+  max-width:  var(--tab-w) !important;
+  max-height: var(--tab-h) !important;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06),
+    0 8px 64px rgba(0,0,0,.8),
+    0 32px 128px rgba(0,0,0,.6);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  font-size: var(--tab-text-base);
+}
+
+/* Badge de resolução */
+[data-modo="tablet"] .app::after {
+  content: 'TABLET  601×967';
+  position: absolute;
+  bottom: 5px; right: 8px;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: .08em;
+  color: rgba(255,255,255,.16);
+  pointer-events: none;
+  z-index: 99999;
+  font-family: ui-monospace, monospace;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   3. LAYOUT ESTRUTURAL — main, topbar, content
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .main {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   4. TOPBAR — 48px fixo
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .topbar {
+  height: var(--tab-topbar-h) !important;
+  min-height: var(--tab-topbar-h) !important;
+  max-height: var(--tab-topbar-h) !important;
+  padding: 0 var(--tab-sp-3) !important;
+  gap: var(--tab-sp-2) !important;
+  position: relative !important;
+  z-index: 400 !important;
+  flex-shrink: 0 !important;
+}
+
+[data-modo="tablet"] .topbar-title {
+  font-size: var(--tab-text-md) !important;
+  letter-spacing: -.3px !important;
+}
+
+[data-modo="tablet"] .topbar-date {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] .topbar-right {
+  gap: var(--tab-sp-2) !important;
+}
+
+/* Hamburger — sempre visível no tablet */
+[data-modo="tablet"] .hamburger {
+  display: flex !important;
+  padding: var(--tab-sp-1) !important;
+}
+
+/* Botões da topbar (tema, modo) */
+[data-modo="tablet"] .theme-toggle-btn,
+[data-modo="tablet"] .modo-toggle-btn {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+/* Botão de ação principal da topbar */
+[data-modo="tablet"] #btn-top-action {
+  font-size: var(--tab-text-xs) !important;
+  min-height: var(--tab-h-btn-sm) !important;
+  padding: var(--tab-p-btn-sm) !important;
+  border-radius: var(--tab-r-xs) !important;
+}
+
+/* Sino de notificação */
+[data-modo="tablet"] .notif-bell-btn .ico-28 {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+[data-modo="tablet"] .notif-badge {
+  font-size: 9px !important;
+  min-width: 14px !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   5. SIDEBAR — overlay deslizante, confinada ao .app
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .sidebar {
+  position: absolute !important;
+  left: 0; top: 0; bottom: 0;
+  width: var(--tab-sidebar-w) !important;
+  min-width: var(--tab-sidebar-w) !important;
+  height: 100% !important;
+  transform: translateX(-100%) !important;
+  transition: transform .26s cubic-bezier(.4,0,.2,1) !important;
+  z-index: 500 !important;
+  box-shadow: var(--tab-sh-xl) !important;
+  overflow: clip !important;
+}
+
+[data-modo="tablet"] .sidebar.open {
+  transform: translateX(0) !important;
+}
+
+[data-modo="tablet"] .sidebar-overlay {
+  display: none !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 499 !important;
+}
+
+[data-modo="tablet"] .sidebar-overlay.active {
+  display: block !important;
+}
+
+/* Logo da sidebar */
+[data-modo="tablet"] .sidebar-logo {
+  padding: var(--tab-sp-3) var(--tab-sp-3) var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .sidebar-logo-img {
+  width: 76px !important;
+  height: 76px !important;
+}
+
+[data-modo="tablet"] .sidebar-logo h1 {
+  font-size: var(--tab-text-sm) !important;
+}
+
+/* Nav da sidebar */
+[data-modo="tablet"] .sidebar-nav {
+  padding: var(--tab-sp-1) 0 !important;
+}
+
+[data-modo="tablet"] .nav-label {
+  font-size: 10px !important;
+  padding: 5px 12px 2px !important;
+}
+
+[data-modo="tablet"] .nav-item {
+  font-size: var(--tab-text-sm) !important;
+  min-height: var(--tab-h-nav) !important;
+  padding: var(--tab-p-nav) !important;
+  margin: 1px var(--tab-sp-1) !important;
+  gap: var(--tab-sp-2) !important;
+  border-radius: var(--tab-r-sm) !important;
+}
+
+[data-modo="tablet"] .nav-item .icon {
+  width: var(--tab-icon-lg) !important;
+  height: var(--tab-icon-lg) !important;
+  font-size: var(--tab-icon-md) !important;
+}
+
+[data-modo="tablet"] .nav-item .icon img,
+[data-modo="tablet"] .nav-item .icon svg {
+  width: var(--tab-icon-md) !important;
+  height: var(--tab-icon-md) !important;
+}
+
+/* Ícones inline genéricos */
+[data-modo="tablet"] .ico-28 { width: 24px !important; height: 24px !important; }
+[data-modo="tablet"] .ico-32 { width: 26px !important; height: 26px !important; }
+[data-modo="tablet"] .ico-24 { width: var(--tab-icon-md) !important; height: var(--tab-icon-md) !important; }
+[data-modo="tablet"] .ico-22 { width: var(--tab-icon-sm) !important; height: var(--tab-icon-sm) !important; }
+[data-modo="tablet"] .ico-20 { width: var(--tab-icon-sm) !important; height: var(--tab-icon-sm) !important; }
+[data-modo="tablet"] .ico-18 { width: var(--tab-icon-xs) !important; height: var(--tab-icon-xs) !important; }
+[data-modo="tablet"] .ico-16 { width: var(--tab-icon-xs) !important; height: var(--tab-icon-xs) !important; }
+
+/* Perfil sidebar footer */
+[data-modo="tablet"] #acs-nome {
+  font-size: var(--tab-text-xs) !important;
+  max-width: 110px !important;
+}
+[data-modo="tablet"] #acs-area {
+  font-size: var(--tab-text-2xs) !important;
+  max-width: 110px !important;
+}
+
+[data-modo="tablet"] .nav-badge {
+  font-size: 9px !important;
+  padding: 1px 4px !important;
+  min-width: 14px !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   6. CONTENT — área rolável principal
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .content {
+  padding: var(--tab-p-content) !important;
+  padding-bottom: var(--tab-sp-4) !important;
+  overflow-y: auto;
+  overflow-x: clip;
+}
+
+[data-modo="tablet"] .content::-webkit-scrollbar { width: 4px; }
+[data-modo="tablet"] .content::-webkit-scrollbar-thumb { border-radius: var(--tab-r-full); }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   7. CARDS
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .card {
+  border-radius: var(--tab-r-lg) !important;
+  padding: var(--tab-p-card) !important;
+  margin-bottom: var(--tab-sp-3) !important;
+}
+
+[data-modo="tablet"] .card-title {
+  font-size: var(--tab-text-md) !important;
+  margin-bottom: var(--tab-sp-3) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .card-title .icon {
+  width: var(--tab-icon-lg) !important;
+  height: var(--tab-icon-lg) !important;
+  font-size: var(--tab-text-md) !important;
+  border-radius: var(--tab-r-sm) !important;
+}
+
+/* Stat cards */
+[data-modo="tablet"] .stat-card {
+  border-radius: var(--tab-r-lg) !important;
+  padding: 14px 12px 12px !important;
+}
+
+/* Cards do dashboard de cobertura */
+[data-modo="tablet"] .dash-cov-card {
+  padding: 8px 8px 8px !important;
+  border-radius: var(--tab-r-md) !important;
+  gap: var(--tab-sp-1) !important;
+}
+
+[data-modo="tablet"] .dash-cov-arc-wrap,
+[data-modo="tablet"] .dash-cov-arc-wrap svg {
+  width: 58px !important;
+  height: 36px !important;
+}
+
+[data-modo="tablet"] .dash-cov-label {
+  font-size: 9px !important;
+}
+
+[data-modo="tablet"] .dash-cov-total {
+  font-size: var(--tab-text-xl) !important;
+}
+
+[data-modo="tablet"] .dash-cov-sub {
+  font-size: 9px !important;
+}
+
+/* Grid de cobertura — 3 colunas em 601px */
+[data-modo="tablet"] #dash-health-cards {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+/* Cards do painel inferior */
+/* Cards do painel inferior — mantém 2 colunas lado a lado */
+[data-modo="tablet"] .dash-bottom-row {
+  grid-template-columns: 1fr 1fr !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .dash-bottom-card {
+  padding: 12px 12px !important;
+  border-radius: var(--tab-r-md) !important;
+  max-height: 320px !important;
+}
+
+[data-modo="tablet"] .dash-bottom-title {
+  font-size: var(--tab-text-sm) !important;
+  margin-bottom: var(--tab-sp-2) !important;
+}
+
+/* Dashboard header */
+[data-modo="tablet"] .dash-header {
+  padding: 14px 14px 12px !important;
+  border-radius: var(--tab-r-lg) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .dash-header-nome {
+  font-size: var(--tab-text-xl) !important;
+}
+
+[data-modo="tablet"] .dash-header-pill {
+  font-size: var(--tab-text-xs) !important;
+  padding: 4px 10px !important;
+  border-radius: var(--tab-r-full) !important;
+}
+
+[data-modo="tablet"] .dash-section-label {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   8. BOTÕES
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .btn {
+  font-size: var(--tab-text-sm) !important;
+  min-height: var(--tab-h-btn) !important;
+  padding: var(--tab-p-btn) !important;
+  border-radius: var(--tab-r-sm) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .btn-sm {
+  font-size: var(--tab-text-xs) !important;
+  min-height: var(--tab-h-btn-sm) !important;
+  padding: var(--tab-p-btn-sm) !important;
+  border-radius: var(--tab-r-xs) !important;
+}
+
+[data-modo="tablet"] .btn-lg {
+  font-size: var(--tab-text-base) !important;
+  min-height: var(--tab-h-btn-lg) !important;
+  padding: var(--tab-p-btn-lg) !important;
+  border-radius: var(--tab-r-md) !important;
+}
+
+[data-modo="tablet"] .close-btn {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: var(--tab-text-base) !important;
+  border-radius: var(--tab-r-sm) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   9. INPUTS — formulários e filtros
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .input {
+  font-size: var(--tab-text-sm) !important;
+  min-height: var(--tab-h-input) !important;
+  padding: var(--tab-p-input) !important;
+  border-radius: var(--tab-r-sm) !important;
+}
+
+[data-modo="tablet"] textarea.input {
+  min-height: 64px !important;
+}
+
+[data-modo="tablet"] label {
+  font-size: var(--tab-text-xs) !important;
+  margin-bottom: 2px !important;
+}
+
+/* Filtros */
+[data-modo="tablet"] .filter-search {
+  height: 32px !important;
+  font-size: var(--tab-text-xs) !important;
+  border-radius: var(--tab-r-full) !important;
+}
+
+[data-modo="tablet"] .fpill {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 8px !important;
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] .fpill-sm {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 0 6px !important;
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] .fselect {
+  height: 32px !important;
+  font-size: var(--tab-text-xs) !important;
+  border-radius: var(--tab-r-full) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   10. TABS
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .tabs {
+  border-radius: var(--tab-r-sm) !important;
+  padding: 2px !important;
+  gap: 2px !important;
+  margin-bottom: var(--tab-sp-3) !important;
+}
+
+[data-modo="tablet"] .tab {
+  font-size: var(--tab-text-xs) !important;
+  min-height: var(--tab-h-tab) !important;
+  padding: var(--tab-sp-1) var(--tab-sp-2) !important;
+  border-radius: var(--tab-r-xs) !important;
+}
+
+/* Tabs do tipo paginação de modal */
+[data-modo="tablet"] .tab-pg-lg {
+  font-size: var(--tab-text-xs) !important;
+  padding: var(--tab-sp-1) var(--tab-sp-2) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   11. MODAIS — confinadas ao frame 601×967
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .modal-overlay {
+  position: absolute !important;
+  z-index: 8000 !important;
+  padding: 16px 10px !important;
+  align-items: center !important;          /* centralizado verticalmente */
+  justify-content: center !important;
+  overflow-y: auto !important;
+}
+
+[data-modo="tablet"] .modal {
+  max-width: calc(var(--tab-w) - 20px) !important;
+  max-height: calc(var(--tab-content-h) - 32px) !important;
+  border-radius: var(--tab-r-lg) !important;
+  margin-bottom: 0 !important;
+}
+
+[data-modo="tablet"] .modal-sm { max-width: 380px !important; }
+[data-modo="tablet"] .modal-md { max-width: 480px !important; }
+[data-modo="tablet"] .modal-xl { max-width: calc(var(--tab-w) - 20px) !important; }
+
+[data-modo="tablet"] .modal-header {
+  padding: var(--tab-sp-3) var(--tab-sp-4) !important;
+  border-radius: var(--tab-r-lg) var(--tab-r-lg) 0 0 !important;
+}
+
+[data-modo="tablet"] .modal-header h2 {
+  font-size: var(--tab-text-md) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .modal-header-sub {
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] .modal-body {
+  padding: var(--tab-sp-3) var(--tab-sp-4) !important;
+  font-size: var(--tab-text-sm) !important;
+}
+
+[data-modo="tablet"] .modal-footer {
+  padding: var(--tab-sp-2) var(--tab-sp-4) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   12. BADGES E NOTIFICAÇÕES
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .badge {
+  font-size: var(--tab-text-2xs) !important;
+  min-height: var(--tab-h-badge) !important;
+  padding: 2px var(--tab-sp-2) !important;
+  border-radius: var(--tab-r-full) !important;
+}
+
+[data-modo="tablet"] .notif {
+  padding: 8px 10px !important;
+  font-size: var(--tab-text-xs) !important;
+  margin-bottom: var(--tab-sp-1) !important;
+  border-radius: var(--tab-r-sm) !important;
+}
+
+[data-modo="tablet"] .notif-icon { font-size: var(--tab-text-sm) !important; }
+[data-modo="tablet"] .notif-text h4 { font-size: var(--tab-text-xs) !important; }
+[data-modo="tablet"] .notif-text p  { font-size: var(--tab-text-2xs) !important; }
+
+/* Painel de notificações — posicionamento na seção 20 */
+
+[data-modo="tablet"] .notif-panel-header {
+  padding: var(--tab-sp-3) !important;
+}
+
+[data-modo="tablet"] .notif-panel-title {
+  font-size: var(--tab-text-md) !important;
+}
+
+[data-modo="tablet"] .notif-panel-body {
+  padding: var(--tab-sp-2) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   13. TABELAS
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] table {
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] th {
+  padding: var(--tab-sp-1) var(--tab-sp-2) !important;
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] td {
+  padding: var(--tab-sp-1) var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .td-cell,
+[data-modo="tablet"] .td-cell-label {
+  padding: 8px 10px !important;
+}
+
+[data-modo="tablet"] .th-label,
+[data-modo="tablet"] .th-label-w {
+  padding: 8px 10px !important;
+  font-size: var(--tab-text-2xs) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   14. FORMULÁRIOS — grids e grupos
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .form-grid {
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .two-col {
+  gap: var(--tab-sp-3) !important;
+}
+
+/* Na largura 601px, duas colunas ainda cabem bem */
+[data-modo="tablet"] .form-grid,
+[data-modo="tablet"] .two-col {
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+}
+
+[data-modo="tablet"] .section-divider {
+  font-size: var(--tab-text-xs) !important;
+  padding: 8px 0 5px !important;
+}
+
+[data-modo="tablet"] .form-group {
+  gap: var(--tab-sp-1) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   15. FICHAS DE ACOMPANHAMENTO
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .ficha-section {
+  padding: var(--tab-sp-3) !important;
+  margin-bottom: var(--tab-sp-2) !important;
+  border-radius: var(--tab-r-md) !important;
+}
+
+[data-modo="tablet"] .ficha-section-title {
+  font-size: var(--tab-text-sm) !important;
+  margin-bottom: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .ficha-label {
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] .ficha-container {
+  padding: var(--tab-sp-2) !important;
+}
+
+/* Layout de acompanhamento — coluna única no portrait */
+[data-modo="tablet"] .acomp-layout,
+[data-modo="tablet"] #acomp-layout {
+  grid-template-columns: 1fr !important;
+  position: relative !important;
+}
+
+[data-modo="tablet"] .acomp-col-ficha {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 10 !important;
+  display: none !important;
+  border-radius: var(--tab-r-lg) !important;
+}
+
+[data-modo="tablet"] .acomp-layout.acomp-ficha-ativa .acomp-col-ficha,
+[data-modo="tablet"] #acomp-layout.acomp-ficha-ativa .acomp-col-ficha {
+  display: flex !important;
+}
+
+[data-modo="tablet"] .acomp-layout.acomp-ficha-ativa .acomp-col-lista,
+[data-modo="tablet"] #acomp-layout.acomp-ficha-ativa .acomp-col-lista {
+  visibility: hidden !important;
+}
+
+[data-modo="tablet"] .acomp-back-btn { display: flex !important; }
+
+[data-modo="tablet"] .acomp-lista-header {
+  padding: var(--tab-sp-2) var(--tab-sp-2) var(--tab-sp-1) !important;
+}
+
+[data-modo="tablet"] .acomp-tipo-label {
+  font-size: var(--tab-text-sm) !important;
+}
+
+[data-modo="tablet"] .acomp-fichas-sub,
+[data-modo="tablet"] .acomp-pct-label {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] .acomp-search-input {
+  height: 32px !important;
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] .individuo-list-item {
+  padding: 10px 12px !important;
+  min-height: 42px !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .acomp-ficha-header {
+  padding: var(--tab-sp-2) var(--tab-sp-3) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .acomp-ficha-avatar {
+  font-size: 26px !important;
+}
+
+[data-modo="tablet"] .acomp-ficha-nome {
+  font-size: var(--tab-text-sm) !important;
+}
+
+[data-modo="tablet"] .acomp-ficha-sub {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] .acomp-fbtn {
+  font-size: var(--tab-text-2xs) !important;
+  min-height: 28px !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   16. DOMICÍLIOS — rua, família, membros
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .familia-card {
+  border-radius: var(--tab-r-md) !important;
+  padding: var(--tab-sp-3) !important;
+  margin-bottom: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .dom-modal-logradouro {
+  font-size: var(--tab-text-md) !important;
+}
+
+[data-modo="tablet"] .dom-modal-numero {
+  font-size: var(--tab-text-lg) !important;
+}
+
+[data-modo="tablet"] .dom-modal-sub {
+  font-size: var(--tab-text-xs) !important;
+}
+
+/* Modal de domicílio — tabs de navegação */
+[data-modo="tablet"] .dom-tab-nav {
+  gap: 2px !important;
+  padding: 2px !important;
+}
+
+[data-modo="tablet"] #dom-modal-body {
+  padding: var(--tab-sp-3) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   17. VACINAS
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .vac-card-header {
+  padding: var(--tab-sp-2) var(--tab-sp-3) !important;
+}
+
+[data-modo="tablet"] .vac-nome {
+  font-size: var(--tab-text-sm) !important;
+}
+
+[data-modo="tablet"] .vac-meta,
+[data-modo="tablet"] .vac-detalhe {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] .vac-ibtn {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 10px !important;
+}
+
+[data-modo="tablet"] .vac-dose-row {
+  padding: var(--tab-sp-1) var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .vac-resumo-chip {
+  font-size: var(--tab-text-2xs) !important;
+  padding: 2px 8px !important;
+  border-radius: var(--tab-r-full) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   18. PENDÊNCIAS E METAS
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .pend-card {
+  padding: var(--tab-sp-2) var(--tab-sp-3) !important;
+  border-radius: var(--tab-r-sm) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .pend-titulo {
+  font-size: var(--tab-text-sm) !important;
+}
+
+[data-modo="tablet"] .pend-meta {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+/* Calendário de metas */
+[data-modo="tablet"] .cal-cell {
+  min-height: 52px !important;
+  padding: 4px !important;
+  border-radius: var(--tab-r-xs) !important;
+}
+
+[data-modo="tablet"] .cal-day-num {
+  font-size: var(--tab-text-2xs) !important;
+}
+
+[data-modo="tablet"] .cal-meta {
+  font-size: 9px !important;
+}
+
+[data-modo="tablet"] .cal-header-cell {
+  font-size: var(--tab-text-2xs) !important;
+  padding: var(--tab-sp-1) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   19. PÁGINA MEU MUNICÍPIO
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .mun-hero {
+  padding: 20px 16px 16px !important;
+  min-height: 100px !important;
+  border-radius: var(--tab-r-lg) !important;
+  margin-bottom: 16px !important;
+}
+
+[data-modo="tablet"] .mun-hero-seal {
+  width: 52px !important;
+  height: 52px !important;
+  font-size: var(--tab-text-xl) !important;
+}
+
+[data-modo="tablet"] .mun-hero-info h1 {
+  font-size: var(--tab-text-md) !important;
+}
+
+[data-modo="tablet"] .mun-card {
+  border-radius: var(--tab-r-md) !important;
+  margin-bottom: 10px !important;
+}
+
+[data-modo="tablet"] .mun-card-header {
+  padding: var(--tab-sp-2) var(--tab-sp-3) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .mun-card-title {
+  font-size: var(--tab-text-sm) !important;
+}
+
+[data-modo="tablet"] .mun-card-subtitle {
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] .mun-card-body {
+  padding: var(--tab-sp-1) var(--tab-sp-3) var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .mun-phones-item {
+  padding: var(--tab-sp-1) var(--tab-sp-2) !important;
+  gap: var(--tab-sp-2) !important;
+}
+
+[data-modo="tablet"] .mun-phones-item-icon {
+  width: 30px !important;
+  height: 30px !important;
+  font-size: var(--tab-text-base) !important;
+  border-radius: var(--tab-r-sm) !important;
+}
+
+[data-modo="tablet"] .mun-phones-item-info .label {
+  font-size: var(--tab-text-xs) !important;
+}
+
+[data-modo="tablet"] .mun-phones-item-info .number {
+  font-size: var(--tab-text-sm) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   20. SALVAMENTO E INDICADORES GLOBAIS
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Escada de z-index no modo tablet (todos absolute no .app) ──
+   499  sidebar-overlay
+   500  sidebar
+   400  topbar
+    10  acomp-col-ficha
+   8000 modal-overlay        (janela normal)
+   8500 notif-overlay        (painel notificações backdrop)
+   8600 notif-panel          (painel notificações)
+   9000 toast-stack          (mensagens temporárias)
+   9500 #acsvi-overlay       (info vacinas — abre sobre modais)
+   9800 #save-indicator
+   9900 #login-screen (não precisa de absolute — nunca coexiste)
+   ──────────────────────────────────────────────────────────────── */
+
+/* Modal overlay — já definido na seção 11; repetido aqui para referência */
+
+/* Notif overlay e painel */
+[data-modo="tablet"] .notif-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 8500 !important;
+}
+[data-modo="tablet"] .notif-panel {
+  position: absolute !important;
+  top: var(--tab-topbar-h) !important;
+  right: 0 !important;
+  width: min(360px, 100%) !important;          /* cabe em 601px sem overflow */
+  height: calc(var(--tab-h) - var(--tab-topbar-h)) !important;
+  max-height: calc(var(--tab-h) - var(--tab-topbar-h)) !important;
+  z-index: 8600 !important;
+  /* Slide: translateX(100%) = 360px para fora pela direita do .app */
+  transform: translateX(100%);
+}
+[data-modo="tablet"] .notif-panel.open {
+  transform: translateX(0) !important;
+}
+
+/* Toast: absolute confinado ao .app */
+[data-modo="tablet"] .toast-stack {
+  position: absolute !important;
+  bottom: 16px !important;
+  right: 12px !important;
+  z-index: 9000 !important;
+  max-width: 300px !important;
+}
+
+/* Overlay de info de vacina (#acsvi-overlay) — gerado por app-vacinas.js */
+[data-modo="tablet"] #acsvi-overlay {
+  position: absolute !important;
+  z-index: 9500 !important;
+}
+
+/* Indicador de salvamento — movido para dentro de .app via JS (_aplicarModo) */
+[data-modo="tablet"] #save-indicator {
+  position: absolute !important;
+  top: calc(var(--tab-topbar-h) + 6px) !important;
+  left: 50% !important;
+  z-index: 9800 !important;
+  font-size: var(--tab-text-xs) !important;
+  padding: 6px 14px !important;
+  border-radius: var(--tab-r-full) !important;
+}
+
+/* Loading overlay — movido para dentro de .app via JS (_aplicarModo) */
+[data-modo="tablet"] #loading-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 9900 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   21. UTILITÁRIOS — gap, padding inline
+   ══════════════════════════════════════════════════════════════════════ */
+[data-modo="tablet"] .gap-xs  { gap: var(--tab-sp-1) !important; }
+[data-modo="tablet"] .gap-sm  { gap: var(--tab-sp-2) !important; }
+[data-modo="tablet"] .gap-md  { gap: var(--tab-sp-3) !important; }
+[data-modo="tablet"] .gap-lg  { gap: var(--tab-sp-4) !important; }
+[data-modo="tablet"] .gap-xl  { gap: var(--tab-sp-6) !important; }
+
+[data-modo="tablet"] .p-0  { padding: 0 !important; }
+[data-modo="tablet"] .p-1  { padding: var(--tab-sp-1) !important; }
+[data-modo="tablet"] .p-2  { padding: var(--tab-sp-2) !important; }
+[data-modo="tablet"] .p-3  { padding: var(--tab-sp-3) !important; }
+[data-modo="tablet"] .p-4  { padding: var(--tab-sp-4) !important; }
+
+/* Texto muted */
+[data-modo="tablet"] .u-sub-text {
+  font-size: var(--tab-text-xs) !important;
+}
+
+/* Empty state */
+[data-modo="tablet"] .u-empty-state {
+  padding: var(--tab-sp-6) !important;
+  font-size: var(--tab-text-sm) !important;
+}
+
+/* Chips saúde */
+[data-modo="tablet"] .saude-chip {
+  font-size: var(--tab-text-2xs) !important;
+  padding: 2px 6px !important;
+  border-radius: var(--tab-r-full) !important;
+}

@@ -1,0 +1,2965 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light" data-modo="pc">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FF7533">
+<title>ACS Neto — Sistema do Agente Comunitário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Carregamento não-bloqueante: media="print" + onload troca para "all" -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap"
+  media="print" onload="this.media='all'">
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap">
+</noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles-tablet.css">
+<style>
+  /* ── Tabela de cronograma de vacinas ─────────────────────────────── */
+  .crono-table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+  .crono-table th{background:var(--surface-2);color:var(--slate-500);font-size:var(--text-2xs);text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;text-align:left}
+  .crono-table td{padding:7px 10px;border-bottom:1px solid var(--border)}
+  .crono-table tr:last-child td{border-bottom:none}
+  .crono-table td:last-child{color:var(--accent);font-weight:600;white-space:nowrap}
+  .crono-avisa-header{font-weight:700;font-size:var(--text-sm);padding:8px 12px;border-radius:8px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+</style>
+<style>
+  #modal-visita-ind .modal { max-width: 680px; }
+
+  /* ── Tabela de Fichas de Visita sem scroll horizontal ── */
+  #page-visitas .table-wrap { overflow-x: hidden; }
+  #page-visitas table { table-layout: fixed; width: 100%; }
+  #page-visitas thead th:nth-child(1) { width: 100px; }
+  #page-visitas thead th:nth-child(2) { width: auto; }
+  #page-visitas thead th:nth-child(3) { width: 160px; }
+  #page-visitas thead th:nth-child(4) { width: 80px; }
+
+  .vis-ind-header {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .vis-ind-header h3 {
+    font-size: 15px; font-weight: 700; margin: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--slate-900);
+  }
+  .vis-ind-inline-field {
+    display: flex; align-items: center; gap: 5px; font-size: 12px; white-space: nowrap;
+  }
+  .vis-ind-inline-field label {
+    font-weight: 600; color: var(--slate-500); font-size: 11px;
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  .vis-ind-inline-field input.date-input,
+  .vis-ind-inline-field select {
+    border: 1px solid var(--bdr-strong); border-radius: 6px;
+    background: var(--surface-2); color: var(--slate-900);
+    padding: 3px 7px; font-size: 12px; cursor: pointer; outline: none; transition: border-color .15s;
+  }
+  .vis-ind-inline-field input.date-input:focus,
+  .vis-ind-inline-field select:focus { border-color: var(--orange-400); }
+
+  .vis-ind-tabs {
+    display: flex; gap: 4px;
+    border-bottom: 2px solid var(--bdr); margin-bottom: 14px;
+  }
+  .vis-ind-tab {
+    padding: 7px 14px; font-size: 12px; font-weight: 600;
+    border-radius: 6px 6px 0 0; cursor: pointer;
+    color: var(--slate-500); background: transparent; border: none; outline: none;
+    transition: color .15s, background .15s; position: relative;
+  }
+  .vis-ind-tab:hover { color: var(--slate-900); }
+  .vis-ind-tab.active {
+    color: var(--orange-400); background: var(--orange-bg);
+    border-bottom: 2px solid var(--orange-400); margin-bottom: -2px;
+  }
+  .vis-ind-pane { display: none; }
+  .vis-ind-pane.active { display: block; }
+
+  .ficha-card {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: 8px;
+    background: var(--surface-2); border: 1px solid var(--bdr);
+    margin-bottom: 8px; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .ficha-card:hover { border-color: var(--orange-400); background: var(--orange-bg); }
+  .ficha-card .ficha-title { font-size: 13px; font-weight: 600; color: var(--slate-900); }
+  .ficha-card .ficha-tag { font-size: 10px; padding: 2px 7px; border-radius: 99px; font-weight: 700; }
+  .ficha-tag-ok   { background: var(--emerald-bg); color: var(--emerald-600); }
+  .ficha-tag-pend { background: var(--orange-bg); color: var(--orange-600); }
+  .ficha-tag-all  { background: var(--violet-bg); color: var(--violet-500); font-size: 9px; }
+
+  .ficha-subform {
+    padding: 14px; border-radius: 8px;
+    background: var(--surface-2); border: 1px solid var(--bdr);
+    margin-top: 8px; animation: viFadeIn .15s;
+  }
+  @keyframes viFadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+  .ficha-subform .sf-title {
+    font-size: 13px; font-weight: 700; margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--slate-900);
+  }
+  .ficha-subform .sf-title button {
+    background: none; border: none; cursor: pointer;
+    color: var(--slate-500); font-size: 15px; line-height: 1; padding: 0 2px;
+  }
+  .ficha-subform .sf-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .ficha-subform .sf-field { display: flex; flex-direction: column; gap: 3px; flex: 1 1 130px; }
+  .ficha-subform .sf-field label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing:.04em; color: var(--slate-500);
+  }
+  .ficha-subform .sf-field input[type="text"],
+  .ficha-subform .sf-field input[type="number"],
+  .ficha-subform .sf-field input.date-input,
+  .ficha-subform .sf-field select,
+  .ficha-subform .sf-field textarea {
+    border: 1px solid var(--bdr-strong); border-radius: 6px;
+    background: var(--surface); color: var(--slate-900);
+    padding: 5px 8px; font-size: 12px; outline: none; transition: border-color .15s;
+  }
+  .ficha-subform .sf-field input:focus,
+  .ficha-subform .sf-field select:focus,
+  .ficha-subform .sf-field textarea:focus { border-color: var(--orange-400); }
+  .ficha-subform .sf-checkbox-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+  .ficha-subform .sf-checkbox {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; cursor: pointer; white-space: nowrap; color: var(--slate-800);
+  }
+  .ficha-subform .sf-checkbox input { cursor: pointer; }
+  .ficha-subform .sf-save-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 18px; border-radius: 7px;
+    background: var(--orange-600); color: #fff;
+    border: none; cursor: pointer; font-size: 13px; font-weight: 700;
+    transition: background .15s;
+  }
+  .ficha-subform .sf-save-btn:hover { background: var(--orange-400); }
+
+  /* aba vacinas — reutiliza VacinaModule, precisa de scroll */
+  #vis-ind-vacinas-content #calendario-vacina { max-height: 340px; overflow-y: auto; padding-right: 2px; }
+
+  .vis-ind-empty { text-align:center; color:var(--slate-500); font-size:var(--text-xs); padding:20px 0; }
+  #vis-ind-obs { width:100%; min-height:60px; resize:vertical; }
+
+  /* medicações no modal */
+  .vis-ind-med-card {
+    background: var(--surface-2); border: 1px solid var(--bdr); border-radius: 8px;
+    padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .vis-ind-med-card .med-nome { font-size: 13px; font-weight: 600; color: var(--slate-900); }
+  .vis-ind-med-card .med-sub  { font-size: 11px; color: var(--slate-500); }
+
+  /* mini-modal de vacina */
+  #modal-add-vacina .modal { max-width: 400px; }
+</style>
+
+<style id="acs-v22-critical">
+/* ACS v19 — Override crítico mínimo */
+/* ÚNICO !important justificado: evita que [data-theme="dark"] #login-screen { display:flex }
+   sobrescreva #login-screen.hidden { display:none } — mesma especificidade (1,1,0),
+   regra do tema vem depois no arquivo e ganharia sem o !important */
+#login-screen.hidden { display: none !important; }
+</style>
+
+
+</head>
+<body>
+
+<div id="loading-overlay"><div class="spinner"></div><div class="loading-msg" id="loading-msg">Aguarde...</div></div>
+<div id="save-indicator"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TELA DE LOGIN
+═══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-wrapper">
+
+    <!-- Título e subtítulo -->
+    <div class="login-header">
+      <h1>ACS Neto</h1>
+      <p>Sistema do Agente Comunitário</p>
+    </div>
+
+    <!-- Personagem apoiado na barra -->
+    <div class="login-character">
+      <img src="icones/login/login.png" alt="ACS">
+    </div>
+
+    <!-- Card — começa na barra do personagem -->
+    <div class="login-card">
+
+      <div id="login-first-msg" class="login-first" style="display:none">
+        <strong><img src="icones/sistema/ico_alerta.png" class="ico-22"> Senha padrão detectada</strong><br>
+        Por segurança, crie uma senha pessoal antes de continuar.<br>
+        Guarde também o <strong>código de recuperação</strong> em local seguro.
+      </div>
+
+      <!-- Seleção de usuário -->
+      <div id="login-form-usuarios">
+        <p class="login-profile-title">Escolha o perfil</p>
+        <div class="u-flex-col-10">
+          <button class="login-btn u-flex-center-10" onclick="selecionarUsuario('neto')">
+            <img src="icones/individuo/ico_ind_identificacao.png" class="ico-28"> Neto <span class="u-text-muted">— conta pessoal</span>
+          </button>
+          <button class="login-btn" onclick="selecionarUsuario('demo')" style="display:flex;align-items:center;gap:10px;justify-content:center;background:linear-gradient(135deg,#059669,#0284c7)">
+            🧪 Demo <span class="u-text-muted">— sem senha</span>
+          </button>
+        </div>
+      </div>
+
+      <p class="login-title" id="login-subtitle" style="display:none">Entre com sua senha</p>
+
+      <!-- Formulário normal de login -->
+      <div id="login-form-normal" style="display:none">
+        <div class="login-field">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" placeholder="Digite sua senha" autocomplete="current-password" onkeydown="if(event.key==='Enter')tentarLogin()">
+        </div>
+        <button class="login-btn" onclick="tentarLogin()">Entrar</button>
+        <div class="login-error" id="login-erro"></div>
+        <div class="login-recover" style="display:flex;justify-content:space-between">
+          <button type="button" onclick="voltarUsuarios()" class="acs-link-btn u-opacity-6">← Voltar</button>
+          <button type="button" onclick="abrirRecuperacao()" class="acs-link-btn">Esqueci minha senha</button>
+        </div>
+      </div>
+
+      <!-- Formulário de troca obrigatória (senha padrão) -->
+      <div id="login-form-troca" style="display:none">
+        <div class="login-field">
+          <label for="troca-nova-senha">Nova Senha <span style="color:var(--vermelho-cl);font-size:var(--text-2xs)">(mín. 8 caracteres, letras e números)</span></label>
+          <input type="password" id="troca-nova-senha" placeholder="Crie sua senha pessoal" autocomplete="new-password">
+        </div>
+        <div class="login-field">
+          <label for="troca-confirm-senha">Confirmar Nova Senha</label>
+          <input type="password" id="troca-confirm-senha" placeholder="Repita a senha" autocomplete="new-password">
+        </div>
+        <div class="login-field">
+          <label for="troca-recover-code">Código de Recuperação <span style="color:rgba(255,255,255,.4);font-size:var(--text-2xs)">(use para recuperar acesso)</span></label>
+          <input type="text" id="troca-recover-code" placeholder="Ex: nome da microárea, código próprio..." autocomplete="off" onkeydown="if(event.key==='Enter')confirmarTrocaSenha()">
+          <div id="troca-recover-hint" style="display:none;margin-top:6px;padding:8px 10px;background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.4);border-radius:6px;font-size:var(--text-xs);color:#ffe566;line-height:1.4"></div>
+        </div>
+        <button class="login-btn" onclick="confirmarTrocaSenha()">Salvar senha e entrar</button>
+        <div class="login-error" id="troca-erro"></div>
+      </div>
+
+    </div><!-- /.login-card -->
+  </div><!-- /.login-wrapper -->
+</div>
+
+<!-- Modal Recuperação de Senha -->
+<div id="modal-recover">
+  <div class="recover-card">
+    <h3><img src="icones/sistema/ico_chave.png" class="ico-28"> Recuperar acesso</h3>
+    <p>Para redefinir sua senha, informe o <strong class="u-color-blue">código de recuperação</strong> cadastrado no sistema (código da microárea ou configurado no primeiro acesso).</p>
+    <div class="login-field">
+      <label for="recover-codigo">Código de Recuperação</label>
+      <input type="password" id="recover-codigo" placeholder="Código de recuperação" onkeydown="if(event.key==='Enter')confirmarRecuperacao()">
+    </div>
+    <div class="login-field" id="recover-nova-field" style="display:none">
+      <label for="recover-nova-senha">Nova Senha <span style="color:#f87171;font-size:var(--text-2xs)">(mín. 8 caracteres, letras e números)</span></label>
+      <input type="password" id="recover-nova-senha" placeholder="Nova senha">
+    </div>
+    <div class="login-field" id="recover-confirm-field" style="display:none">
+      <label for="recover-nova-confirm">Confirmar Nova Senha</label>
+      <input type="password" id="recover-nova-confirm" placeholder="Repita a Nova Senha">
+    </div>
+    <div class="login-error" id="recover-erro"></div>
+    <div class="recover-actions">
+      <button class="recover-cancel" onclick="fecharRecuperacao()">Cancelar</button>
+      <button class="recover-confirm" onclick="confirmarRecuperacao()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="icones/login/logo.png" alt="ACS Neto" class="sidebar-logo-img">
+      <h1>ACS Neto</h1>
+    </div>
+    <div id="sidebar-acs-info" style="padding:0 14px 12px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:4px">
+      <div id="sidebar-esf" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">ESF Maria Heleny Matos Brandão</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.3px">
+        <span id="sidebar-microarea">Microárea 09</span>
+        <span style="margin:0 4px;opacity:.5">·</span>
+        <span id="sidebar-cnes">CNES 6900704</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-label">Principal</div>
+        <button class="nav-item active" type="button" data-page="dashboard" onclick="showPage('dashboard')">
+          <span class="icon"><img src="icones/dashboard/dashboard.png" loading="eager" class="ico-32"></span><span>Painel de Controle</span>
+        </button>
+        <button class="nav-item" type="button" data-page="pendencias" onclick="showPage('pendencias')">
+          <span class="icon"><img src="icones/pendencias/pendencias.png" loading="eager" class="ico-32"></span><span>Pendências</span>
+          <span class="nav-badge" id="badge-pend">5</span>
+        </button>
+        <button class="nav-item" type="button" data-page="metas" onclick="showPage('metas')">
+          <span class="icon"><img src="icones/metas/metas.png" loading="eager" class="ico-32"></span><span>Metas</span>
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Cadastros</div>
+        <button class="nav-item" type="button" data-page="familias" onclick="showPage('familias')">
+          <span class="icon"><img src="icones/familias/familias.png" loading="eager" class="ico-32"></span><span>Domicílios</span>
+        </button>
+        <button class="nav-item" type="button" data-page="individuos" onclick="showPage('individuos')">
+          <span class="icon"><img src="icones/individuos/individuos.png" loading="eager" class="ico-32"></span><span>Indivíduos</span>
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Saúde</div>
+        <button class="nav-item" type="button" data-page="condicoes" onclick="showPage('condicoes')">
+          <span class="icon"><img src="icones/condicoes/condicoes.png" loading="eager" class="ico-32"></span><span>Condições Crônicas</span>
+        </button>
+        <button class="nav-item" type="button" data-page="vacinas" onclick="showPage('vacinas')">
+          <span class="icon"><img src="icones/vacinas/vacinas.png" loading="eager" class="ico-32"></span><span>Vacinas Infantis</span>
+          <span class="nav-badge" id="badge-vac" style="display:none"></span>
+        </button>
+        <button class="nav-item" type="button" data-page="visitas" onclick="showPage('visitas')">
+          <span class="icon"><img src="icones/visitas/visitas.png" loading="eager" class="ico-32"></span><span>Fichas de Visita</span>
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Acompanhamento</div>
+        <button class="nav-item" type="button" data-page="acompanhamento" data-acomp="has" onclick="openAcompPage('has')">
+          <span class="icon"><img src="icones/has/has.png" loading="eager" class="ico-32"></span><span>Ficha HAS</span>
+          <span class="nav-badge" id="badge-has" style="display:none"></span>
+        </button>
+        <button class="nav-item" type="button" data-page="acompanhamento" data-acomp="dm" onclick="openAcompPage('dm')">
+          <span class="icon"><img src="icones/dm/dm.png" loading="eager" class="ico-32"></span><span>Ficha DM</span>
+          <span class="nav-badge" id="badge-dm" style="display:none"></span>
+        </button>
+        <button class="nav-item" type="button" data-page="acompanhamento" data-acomp="gestante" onclick="openAcompPage('gestante')">
+          <span class="icon"><img src="icones/gestante/gestante.png" loading="eager" class="ico-32"></span><span>Ficha Gestante</span>
+          <span class="nav-badge" id="badge-gest" style="display:none"></span>
+        </button>
+        <button class="nav-item" type="button" data-page="acompanhamento" data-acomp="consumoAlimentar" onclick="openAcompPage('consumoAlimentar')">
+          <span class="icon"><img src="icones/alimentacao/consumo.png" loading="eager" class="ico-32"></span><span>Alimentação</span>
+          <span class="nav-badge" id="badge-alim" style="display:none"></span>
+        </button>
+        <button class="nav-item" type="button" data-page="acompanhamento" data-acomp="hans" onclick="openAcompPage('hans')">
+          <span class="icon"><img src="icones/hanseniase/rastreio.png" loading="eager" class="ico-32"></span><span>Hanseníase</span>
+          <span class="nav-badge" id="badge-hans" style="display:none;">!</span>
+        </button>
+        <button class="nav-item" type="button" onclick="openModalDomiciliados()">
+          <span class="icon"><img src="icones/domiciliados/domiciliado.png" loading="eager" class="ico-32"></span><span>Domiciliados</span>
+          <span class="nav-badge" id="badge-acamado" style="display:none"></span>
+        </button>
+        <button class="nav-item" type="button" onclick="openModalPrevencao()">
+          <span class="icon"><img src="icones/prevencao/prevencao.png" loading="eager" class="ico-32"></span><span>Prevenção</span>
+          <span class="nav-badge" id="badge-prevencao" style="display:none"></span>
+        </button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Sistema</div>
+        <button class="nav-item" type="button" data-page="configuracoes" onclick="showPage('configuracoes')">
+          <span class="icon"><img src="icones/configuracoes/configuracoes.png" loading="eager" class="ico-32"></span><span>Configurações</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Overlay para fechar sidebar em mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="hamburger" aria-label="Abrir menu" title="Abrir menu" id="hamburger-btn" onclick="toggleSidebar()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="topbar-title" id="page-title">Painel de Controle</div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="data-hoje"></span>
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema claro/escuro">
+          <span class="icon-sun">☀️</span>
+          <span class="icon-moon">🌙</span>
+        </button>
+        <button class="notif-bell-btn" onclick="toggleNotifPanel()" title="Histórico de atividades" id="notif-bell-btn">
+          <img src="icones/sistema/ico_notificacao.png" class="ico-28">
+          <span class="notif-badge" id="notif-badge">0</span>
+        </button>
+        <button class="inspecao-btn" id="btn-inspecao" onclick="toggleInspecao()" title="Modo Inspeção — exibe nome do modal/div ativo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          <span>Inspeção</span>
+        </button>
+        <button class="btn btn-primary" id="btn-top-action" onclick="openNovoDomicilio()">+ Novo Domicílio</button>
+      </div>
+    </div>
+
+    <!-- BADGE INSPEÇÃO -->
+    <div id="inspecao-badge" style="display:none;position:absolute;top:var(--topbar-h,50px);left:50%;transform:translateX(-50%);z-index:2147483647;background:#1e1b4b;color:#a5f3fc;font-family:monospace;font-size:12px;font-weight:600;padding:6px 16px 6px 12px;border-radius:0 0 10px 10px;border:1.5px solid #4f46e5;border-top:none;box-shadow:0 6px 24px rgba(0,0,0,.55);white-space:nowrap;pointer-events:none;align-items:center;gap:10px">
+      <span style="color:#818cf8;font-size:10px;text-transform:uppercase;letter-spacing:.08em">ativo</span>
+      <span id="inspecao-badge-text">—</span>
+    </div>
+
+    <script>
+    (function(){
+      var _inspecaoAtivo = false;
+      var _inspecaoTimer = null;
+
+      window.toggleInspecao = function() {
+        _inspecaoAtivo = !_inspecaoAtivo;
+        var btn = document.getElementById('btn-inspecao');
+        var badge = document.getElementById('inspecao-badge');
+        if (_inspecaoAtivo) {
+          btn.classList.add('inspecao-on');
+          badge.style.display = 'flex';
+          _scanAtivo();
+          _inspecaoTimer = setInterval(_scanAtivo, 400);
+        } else {
+          btn.classList.remove('inspecao-on');
+          badge.style.display = 'none';
+          clearInterval(_inspecaoTimer);
+        }
+      };
+
+      function _scanAtivo() {
+        var badge = document.getElementById('inspecao-badge');
+        var txt = document.getElementById('inspecao-badge-text');
+        if (!txt) return;
+
+        // 1. modal-overlay visível — encontra o do topo (maior z-index)
+        var overlays = Array.from(document.querySelectorAll('.modal-overlay')).filter(function(el){
+          var s = getComputedStyle(el);
+          return s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
+        });
+        if (overlays.length) {
+          var top = overlays.reduce(function(a,b){
+            return (parseInt(b.style.zIndex)||0) >= (parseInt(a.style.zIndex)||0) ? b : a;
+          });
+          // Mostra o modal-overlay E o .modal interno (onde fica o id real)
+          var inner = top.querySelector('.modal[id], [class*="modal"][id]');
+          var label = _nomear(top);
+          if (inner && inner !== top) label += '  →  ' + _nomear(inner);
+          txt.textContent = label;
+          if (badge) badge.style.background = '#1e1b4b';
+          return;
+        }
+
+        // 2. page ativa
+        var page = document.querySelector('.page.active');
+        if (page) {
+          txt.textContent = _nomear(page);
+          if (badge) badge.style.background = '#064e3b';
+          return;
+        }
+
+        txt.textContent = '(nenhum elemento ativo)';
+      }
+
+      function _nomear(el) {
+        var partes = [];
+        if (el.id) partes.push('#' + el.id);
+        var cls = Array.from(el.classList).filter(function(c){
+          return c !== 'open' && c !== 'active' && c !== 'modal-overlay';
+        });
+        if (cls.length) partes.push('.' + cls.slice(0, 3).join('.'));
+        return partes.join(' ') || el.tagName.toLowerCase();
+      }
+    })();
+    </script>
+
+    <div class="content" id="main-content">
+
+      <!-- ========== DASHBOARD ========== -->
+      
+<!-- ◆ BLOCO: HTML_DASHBOARD | HTML estático do painel principal: stats grid, cards de alertas, fichas, metas | Editar para adicionar/remover seções fixas do dashboard -->
+<div id="page-dashboard" class="page active">
+
+  <!-- ── CABEÇALHO (apenas pílulas de stats) ────────────────── -->
+  <!-- Inputs ocultos mantidos para compatibilidade com renderDashboard() -->
+  <div style="display:none">
+    <div id="dash-acs-nome"></div>
+    <div id="dash-version-badge"></div>
+    <div id="dash-header-sub"></div>
+  </div>
+  <div class="dash-header">
+    <div class="dash-header-meta u-flex-center">
+      <button class="dash-header-pill dash-pill-btn" onclick="showPage('familias')" title="Ver domicílios">
+        <img src="icones/sistema/ico_visita_familia.png" class="ico-32"> <strong id="s-familias">0</strong> famílias
+      </button>
+      <button class="dash-header-pill dash-pill-btn" onclick="showPage('individuos')" title="Ver indivíduos">
+        <img src="icones/sistema/ico_visita_individuo.png" class="ico-32"> <strong id="s-individuos">0</strong> indivíduos
+      </button>
+      <button class="dash-header-pill dash-pill-btn" id="dash-pill-mes" onclick="showPage('agenda')" title="Agenda / Visitas"></button>
+    </div>
+  </div>
+
+  <!-- ── COBERTURA DE VISITAS DO MÊS ────────────────────────── -->
+  <div>
+    <div class="dash-section-label">Cobertura de visitas — grupos prioritários</div>
+    <div id="dash-health-cards"></div>
+  </div>
+
+  <!-- ── ALERTAS + PENDÊNCIAS — lado a lado ─────────────────── -->
+  <div class="dash-bottom-row">
+    <div class="dash-bottom-card">
+      <div class="dash-bottom-title u-color-red">
+        <span style="background:#fee2e2;border-radius:6px;padding:3px 7px"><img src="icones/sistema/ico_notificacao.png" class="ico-28"></span>
+        Alertas e Notificações
+      </div>
+      <div id="alertas-list" class="dash-bottom-card-scroll"></div>
+      <div class="dash-bottom-card-footer">
+        <button onclick="toggleNotifPanel()">Ver histórico completo ›</button>
+      </div>
+    </div>
+    <div class="dash-bottom-card">
+      <div class="dash-bottom-title u-color-amber">
+        <span style="background:#fef3c7;border-radius:6px;padding:3px 7px"><img src="icones/sistema/ico_pendencia.png" class="ico-28"></span>
+        Pendências em Aberto
+      </div>
+      <div id="dash-pendencias-list" class="dash-bottom-card-scroll"></div>
+      <div class="dash-bottom-card-footer">
+        <button onclick="showPage('pendencias')">Ver todas as pendências ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- slots ocultos mantidos para compatibilidade com JS legado -->
+  <div style="display:none">
+    <div id="dash-metas-banner"></div>
+    <div id="dash-hans-section"></div>
+    <div id="visitas-hoje"></div>
+    <div id="fichas-dash-detail"></div>
+    <div id="mes-fichas-label"></div>
+    <div id="metas-dash"></div>
+    <div id="s-visitas-mes"></div>
+    <div id="s-meta-visitas"></div>
+    <div id="s-pendencias"></div>
+    <div id="s-cobertura"></div>
+  </div>
+
+</div>
+
+      <!-- ========== DOMICÍLIOS ========== -->
+      
+<!-- ◆ FIM BLOCO: HTML_DASHBOARD -->
+<div id="page-familias" class="page">
+        <h1 class="sr-only">Domicílios</h1>
+        <!-- filtros globais -->
+        <!-- selects ocultos mantidos para compatibilidade com JS -->
+        <select class="filter-select-hidden" id="filter-cond-fam" onchange="renderFamilias()">
+          <option value="">Todas as condições</option>
+          <option value="has">Hipertensão</option>
+          <option value="dm">Diabetes</option>
+          <option value="gestante">Gestante</option>
+          <option value="papa-ok">Papanicolau &lt; 1 ano</option>
+          <option value="papa-atrasado">Papanicolau &gt; 1 ano</option>
+          <option value="mamo-ok">Mamografia &lt; 2 anos</option>
+          <option value="mamo-atrasada">Mamografia &gt; 2 anos</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-ficha-fam" onchange="renderFamilias()">
+          <option value="">Fichas</option>
+          <option value="vacinas-atrasadas">Vacinas Atrasadas</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-visita-fam" onchange="renderFamilias()">
+          <option value="">Todas as situações</option>
+          <option value="sem-visita">Visita pendente</option>
+          <option value="visitado">Visitado este mês</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-ordem-fam" onchange="renderFamilias()">
+          <option value="rua">Ordenar por rua</option>
+          <option value="numero-asc">Número crescente</option>
+          <option value="numero-desc">Número decrescente</option>
+          <option value="prontuario">Prontuário</option>
+          <option value="risco">Risco (alto primeiro)</option>
+        </select>
+        <div class="filter-bar"></div>
+
+        <!-- resumo rápido -->
+        <div class="u-flex-wrap-mb14" id="dom-resumo-bar"></div>
+
+        <!-- lista agrupada por rua -->
+        <div id="lista-ruas"></div>
+      </div>
+
+      <!-- ========== INDIVÍDUOS ========== -->
+      <div id="page-individuos" class="page">
+        <h1 class="sr-only">Indivíduos</h1>
+        <div class="notif notif-info u-mb-12">
+          <div class="notif-icon u-fs-16">i</div>
+          <div class="notif-text"><h2 class="notif-heading">Cadastro por Domicílio</h2>
+          <p>Para cadastrar um indivíduo, acesse o domicílio correspondente em <strong>Domicílios</strong> e clique em "Indivíduo". Isso garante o vínculo correto.</p></div>
+        </div>
+        <select class="filter-select-hidden" id="filter-faixa" onchange="renderIndividuos()">
+          <option value="">Todas as faixas</option>
+          <option value="recem_nascido">Recém-nascido</option>
+          <option value="bebe">Bebê</option>
+          <option value="crianca1">Criança 2–5</option>
+          <option value="crianca2">Criança 5–12</option>
+          <option value="adolescente">Adolescente</option>
+          <option value="adulto">Adulto</option>
+          <option value="idoso">Idoso</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-cond" onchange="renderIndividuos()">
+          <option value="">Todas as condições</option>
+          <option value="vacinas-atrasadas">Vacinas Atrasadas</option>
+          <option value="has">HAS</option>
+          <option value="dm">DM</option>
+          <option value="gestante">Gestante</option>
+          <option value="deficiencia">Deficiência</option>
+          <option value="saude-mental">Saúde Mental</option>
+          <option value="acamado">Acamado</option>
+          <option value="cancer">Câncer</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-ind-ordem" onchange="renderIndividuos()">
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+          <option value="mais-novo">Mais novo</option>
+          <option value="mais-velho">Mais velho</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-prevencao" onchange="renderIndividuos()">
+          <option value="">Todos</option>
+          <option value="papa-atrasado">Papanicolau atrasado</option>
+          <option value="papa-ok">Papanicolau em dia</option>
+          <option value="mamo-atrasada">Mamografia atrasada</option>
+          <option value="mamo-ok">Mamografia em dia</option>
+        </select>
+        <div class="filter-bar"></div>
+
+        <div id="tabela-individuos" class="u-flex-col-6"></div>
+      </div>
+
+      <!-- ========== VACINAS ========== -->
+      <div id="page-vacinas" class="page">
+        <h1 class="sr-only">Vacinas</h1>
+
+        <!-- Abas -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--bdr);padding-bottom:0" role="tablist" aria-label="Vacinas">
+          <button id="vac-tab-lista-btn" onclick="switchVacTab('lista')"
+            role="tab" aria-selected="true" aria-controls="vac-tab-lista"
+            class="tab-pg active">
+            <img src="icones/vacinas_icons/ico_vac_influenza.png" class="ico-22"> Crianças
+          </button>
+          <button id="vac-tab-crono-btn" onclick="switchVacTab('crono')"
+            role="tab" aria-selected="false" aria-controls="vac-tab-crono"
+            class="tab-pg">
+            <img src="icones/agenda/agenda.png" class="ico-22"> Cronograma
+          </button>
+        </div>
+
+        <!-- ABA: Lista de crianças -->
+        <div id="vac-tab-lista" role="tabpanel" aria-labelledby="vac-tab-lista-btn">
+          <!-- Barra de resumo -->
+          <div id="vac-resumo-bar" class="u-flex-wrap-mb16"></div>
+          <!-- Filtros -->
+          <select class="filter-select-hidden" id="vac-filter-idade" onchange="renderVacinas()">
+            <option value="">Todas as idades</option>
+            <option value="0-6">0 – 6 meses</option>
+            <option value="6-12">6 – 12 meses</option>
+            <option value="12-24">1 – 2 anos</option>
+            <option value="24-60">2 – 5 anos</option>
+          </select>
+          <select class="filter-select-hidden" id="vac-filter-sit" onchange="renderVacinas()">
+            <option value="">Todas as situações</option>
+            <option value="atrasada">Com atraso</option>
+            <option value="ok">Em dia</option>
+            <option value="semnasc">Sem data de nasc.</option>
+          </select>
+          <select class="filter-select-hidden" id="vac-filter-vacina" onchange="renderVacinas()">
+            <option value="">Todas as vacinas</option>
+          </select>
+        <div class="filter-bar"></div>
+
+          <!-- Tabela -->
+          <div id="vac-lista"></div>
+        </div>
+
+        <!-- ABA: Cronograma -->
+        <div id="vac-tab-crono" role="tabpanel" aria-labelledby="vac-tab-crono-btn" style="display:none">
+          <div class="u-flex-col-14">
+
+            <!-- ===== CARD BCG ===== -->
+            <div class="card card-amber">
+              <div class="grad-amber">
+                <div style="font-weight:700;font-size:var(--text-base)">🟡 Cronograma BCG – 2026</div>
+                <div style="font-size:var(--text-2xs);opacity:.9;margin-top:2px">Tuberculose · Prefeitura de Maracanaú</div>
+              </div>
+
+              <!-- Sub-abas AVISA -->
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="bcg-tabs">
+                <button onclick="switchBcgTab('I')"   id="bcg-btn-I"   class="pill-btn active">I</button>
+                <button onclick="switchBcgTab('II')"  id="bcg-btn-II"  class="pill-btn">II</button>
+                <button onclick="switchBcgTab('III')" id="bcg-btn-III" class="pill-btn">III</button>
+                <button onclick="switchBcgTab('IV')"  id="bcg-btn-IV"  class="pill-btn">IV</button>
+                <button onclick="switchBcgTab('V')"   id="bcg-btn-V"   class="pill-btn">V</button>
+                <button onclick="switchBcgTab('VI')"  id="bcg-btn-VI"  class="pill-btn">VI</button>
+              </div>
+
+              <!-- AVISA I -->
+              <div id="bcg-avisa-I">
+                <div class="u-grid-2">
+                  <div>
+                    <div class="label-categ label-green">UBS JPA II · Terça-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>06, 20</td></tr><tr><td>Fevereiro</td><td>03</td></tr>
+                      <tr><td>Março</td><td>03, 17, 31</td></tr><tr><td>Abril</td><td>14, 28</td></tr>
+                      <tr><td>Maio</td><td>12, 26</td></tr><tr><td>Junho</td><td>09, 23</td></tr>
+                      <tr><td>Julho</td><td>07, 21</td></tr><tr><td>Agosto</td><td>04, 18</td></tr>
+                      <tr><td>Setembro</td><td>01, 15, 29</td></tr><tr><td>Outubro</td><td>13, 27</td></tr>
+                      <tr><td>Novembro</td><td>10, 24</td></tr><tr><td>Dezembro</td><td>08, 22</td></tr>
+                    </table>
+                  </div>
+                  <div>
+                    <div class="label-categ label-green">UBS Alto da Mangueira · Terça-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>13, 27</td></tr><tr><td>Fevereiro</td><td>10, 24</td></tr>
+                      <tr><td>Março</td><td>10, 24</td></tr><tr><td>Abril</td><td>07</td></tr>
+                      <tr><td>Maio</td><td>05, 19</td></tr><tr><td>Junho</td><td>02, 16, 30</td></tr>
+                      <tr><td>Julho</td><td>14, 28</td></tr><tr><td>Agosto</td><td>11, 25</td></tr>
+                      <tr><td>Setembro</td><td>08, 22</td></tr><tr><td>Outubro</td><td>06, 20</td></tr>
+                      <tr><td>Novembro</td><td>03, 17</td></tr><tr><td>Dezembro</td><td>01, 15, 29</td></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AVISA II -->
+              <div id="bcg-avisa-II" style="display:none">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                  <div>
+                    <div class="label-categ label-blue">UBS Elias Boutala · Segunda-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>05, 19</td></tr><tr><td>Fevereiro</td><td>02, 16</td></tr>
+                      <tr><td>Março</td><td>02, 16, 30</td></tr><tr><td>Abril</td><td>13, 27</td></tr>
+                      <tr><td>Maio</td><td>11, 25</td></tr><tr><td>Junho</td><td>08, 22</td></tr>
+                      <tr><td>Julho</td><td>13, 27</td></tr><tr><td>Agosto</td><td>10, 24</td></tr>
+                      <tr><td>Setembro</td><td>21</td></tr><tr><td>Outubro</td><td>05, 19</td></tr>
+                      <tr><td>Novembro</td><td>16, 30</td></tr><tr><td>Dezembro</td><td>14, 28</td></tr>
+                    </table>
+                  </div>
+                  <div>
+                    <div class="label-categ label-blue">UBS Carlos Antônio · Segunda-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>12, 26</td></tr><tr><td>Fevereiro</td><td>09, 23</td></tr>
+                      <tr><td>Março</td><td>09, 23</td></tr><tr><td>Abril</td><td>06, 20</td></tr>
+                      <tr><td>Maio</td><td>04, 18</td></tr><tr><td>Junho</td><td>01, 15</td></tr>
+                      <tr><td>Julho</td><td>06</td></tr><tr><td>Agosto</td><td>03, 17, 31</td></tr>
+                      <tr><td>Setembro</td><td>14, 28</td></tr><tr><td>Outubro</td><td>26</td></tr>
+                      <tr><td>Novembro</td><td>09, 23</td></tr><tr><td>Dezembro</td><td>07, 21</td></tr>
+                    </table>
+                  </div>
+                </div>
+                <div style="max-width:50%">
+                  <div class="label-categ label-blue">UBS Almir Dutra · Terça-feira</div>
+                  <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                    <tr><td>Janeiro</td><td>06, 20</td></tr><tr><td>Fevereiro</td><td>03, 17</td></tr>
+                    <tr><td>Março</td><td>03, 17</td></tr><tr><td>Abril</td><td>07, 14, 28</td></tr>
+                    <tr><td>Maio</td><td>05, 19</td></tr><tr><td>Junho</td><td>02, 16</td></tr>
+                    <tr><td>Julho</td><td>07, 21, 28</td></tr><tr><td>Agosto</td><td>11, 25</td></tr>
+                    <tr><td>Setembro</td><td>08, 22</td></tr><tr><td>Outubro</td><td>06, 20</td></tr>
+                    <tr><td>Novembro</td><td>03, 17</td></tr><tr><td>Dezembro</td><td>01, 15, 29</td></tr>
+                  </table>
+                </div>
+              </div>
+
+              <!-- AVISA III -->
+              <div id="bcg-avisa-III" style="display:none">
+                <div class="u-grid-2">
+                  <div>
+                    <div class="label-categ label-purple">UBS Anastácio · Quinta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>08, 22</td></tr><tr><td>Fevereiro</td><td>05, 19</td></tr>
+                      <tr><td>Março</td><td>05, 19</td></tr><tr><td>Abril</td><td>02, 16, 30</td></tr>
+                      <tr><td>Maio</td><td>14, 28</td></tr><tr><td>Junho</td><td>11, 25</td></tr>
+                      <tr><td>Julho</td><td>09, 23</td></tr><tr><td>Agosto</td><td>06, 20</td></tr>
+                      <tr><td>Setembro</td><td>03, 17</td></tr><tr><td>Outubro</td><td>01, 15, 29</td></tr>
+                      <tr><td>Novembro</td><td>12, 26</td></tr><tr><td>Dezembro</td><td>10</td></tr>
+                    </table>
+                  </div>
+                  <div>
+                    <div class="label-categ label-purple">UBS Boa Esperança · Quinta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>15, 29</td></tr><tr><td>Fevereiro</td><td>12, 26</td></tr>
+                      <tr><td>Março</td><td>12, 26</td></tr><tr><td>Abril</td><td>09, 23</td></tr>
+                      <tr><td>Maio</td><td>07, 21</td></tr><tr><td>Junho</td><td>18</td></tr>
+                      <tr><td>Julho</td><td>02, 16, 30</td></tr><tr><td>Agosto</td><td>13, 27</td></tr>
+                      <tr><td>Setembro</td><td>10, 24</td></tr><tr><td>Outubro</td><td>08, 22</td></tr>
+                      <tr><td>Novembro</td><td>05, 19</td></tr><tr><td>Dezembro</td><td>03, 17</td></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AVISA IV -->
+              <div id="bcg-avisa-IV" style="display:none">
+                <div class="u-grid-2">
+                  <div>
+                    <div class="label-categ label-amber">UBS Isabel Bonfim (AAII) · Quarta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>14, 28</td></tr><tr><td>Fevereiro</td><td>11, 25</td></tr>
+                      <tr><td>Março</td><td>11, 25</td></tr><tr><td>Abril</td><td>08, 22</td></tr>
+                      <tr><td>Maio</td><td>13, 27</td></tr><tr><td>Junho</td><td>10, 24</td></tr>
+                      <tr><td>Julho</td><td>08, 22</td></tr><tr><td>Agosto</td><td>05, 19</td></tr>
+                      <tr><td>Setembro</td><td>02, 16, 30</td></tr><tr><td>Outubro</td><td>14, 28</td></tr>
+                      <tr><td>Novembro</td><td>11, 25</td></tr><tr><td>Dezembro</td><td>09, 23</td></tr>
+                    </table>
+                  </div>
+                  <div>
+                    <div class="label-categ label-amber">UBS Industrial · Quarta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>07, 21</td></tr><tr><td>Fevereiro</td><td>04, 18</td></tr>
+                      <tr><td>Março</td><td>04, 18</td></tr><tr><td>Abril</td><td>01, 15, 29</td></tr>
+                      <tr><td>Maio</td><td>06, 20</td></tr><tr><td>Junho</td><td>03, 17</td></tr>
+                      <tr><td>Julho</td><td>01, 15, 29</td></tr><tr><td>Agosto</td><td>12, 26</td></tr>
+                      <tr><td>Setembro</td><td>09, 23</td></tr><tr><td>Outubro</td><td>07, 21</td></tr>
+                      <tr><td>Novembro</td><td>04, 18</td></tr><tr><td>Dezembro</td><td>02, 16, 30</td></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AVISA V -->
+              <div id="bcg-avisa-V" style="display:none">
+                <div class="u-grid-2">
+                  <div>
+                    <div class="label-categ label-red">UBS Piratininga · Quinta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>08, 22</td></tr><tr><td>Fevereiro</td><td>05, 19</td></tr>
+                      <tr><td>Março</td><td>05, 19</td></tr><tr><td>Abril</td><td>02, 16, 30</td></tr>
+                      <tr><td>Maio</td><td>14, 28</td></tr><tr><td>Junho</td><td>11, 25</td></tr>
+                      <tr><td>Julho</td><td>09, 23</td></tr><tr><td>Agosto</td><td>06, 20</td></tr>
+                      <tr><td>Setembro</td><td>03, 17</td></tr><tr><td>Outubro</td><td>01, 15, 29</td></tr>
+                      <tr><td>Novembro</td><td>12, 26</td></tr><tr><td>Dezembro</td><td>10</td></tr>
+                    </table>
+                  </div>
+                  <div>
+                    <div class="label-categ label-red">UBS Novo Oriente · Quinta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>15, 29</td></tr><tr><td>Fevereiro</td><td>12, 26</td></tr>
+                      <tr><td>Março</td><td>12, 26</td></tr><tr><td>Abril</td><td>09, 23</td></tr>
+                      <tr><td>Maio</td><td>07, 21</td></tr><tr><td>Junho</td><td>18</td></tr>
+                      <tr><td>Julho</td><td>02, 16, 30</td></tr><tr><td>Agosto</td><td>13, 27</td></tr>
+                      <tr><td>Setembro</td><td>10, 24</td></tr><tr><td>Outubro</td><td>08, 22</td></tr>
+                      <tr><td>Novembro</td><td>05, 19</td></tr><tr><td>Dezembro</td><td>03, 17</td></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AVISA VI -->
+              <div id="bcg-avisa-VI" style="display:none">
+                <div class="u-grid-2">
+                  <div>
+                    <div class="label-categ label-sky">UBS Alarico Leite · Sexta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>09, 23</td></tr><tr><td>Fevereiro</td><td>06, 20</td></tr>
+                      <tr><td>Março</td><td>06, 20</td></tr><tr><td>Abril</td><td>17</td></tr>
+                      <tr><td>Maio</td><td>08, 22</td></tr><tr><td>Junho</td><td>05, 19</td></tr>
+                      <tr><td>Julho</td><td>03, 17, 31</td></tr><tr><td>Agosto</td><td>14, 28</td></tr>
+                      <tr><td>Setembro</td><td>11, 25</td></tr><tr><td>Outubro</td><td>09, 23</td></tr>
+                      <tr><td>Novembro</td><td>06</td></tr><tr><td>Dezembro</td><td>04, 18</td></tr>
+                    </table>
+                  </div>
+                  <div>
+                    <div class="label-categ label-sky">UBS Mucunã · Sexta-feira</div>
+                    <table class="crono-table"><tr><th>Mês</th><th>Dias</th></tr>
+                      <tr><td>Janeiro</td><td>16, 30</td></tr><tr><td>Fevereiro</td><td>13, 27</td></tr>
+                      <tr><td>Março</td><td>13, 27</td></tr><tr><td>Abril</td><td>10, 24</td></tr>
+                      <tr><td>Maio</td><td>15, 29</td></tr><tr><td>Junho</td><td>12, 26</td></tr>
+                      <tr><td>Julho</td><td>10, 24</td></tr><tr><td>Agosto</td><td>07, 21</td></tr>
+                      <tr><td>Setembro</td><td>04, 18</td></tr><tr><td>Outubro</td><td>02, 16, 30</td></tr>
+                      <tr><td>Novembro</td><td>13, 27</td></tr><tr><td>Dezembro</td><td>11</td></tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- ===== FIM CARD BCG ===== -->
+
+            <!-- Cabeçalho Febre Amarela / Tríplice Viral -->
+            <div class="grad-fire">
+              <div class="u-fw7-16">💉 Febre Amarela &amp; Tríplice Viral</div>
+              <div style="font-size:var(--text-xs);opacity:.9;margin-top:2px">Cronograma 2026 · Prefeitura de Maracanaú</div>
+            </div>
+
+            <!-- Estilo da mini-tabela inline -->
+
+            <!-- AVISA I -->
+            <div class="card card-green">
+              <div class="crono-avisa-header chip-green">🟢 AVISA I</div>
+              <table class="crono-table">
+                <tr><th>UBS</th><th>Dia da Semana</th></tr>
+                <tr><td>Horto</td><td>Terça-feira</td></tr>
+                <tr><td>JPA II</td><td>Quinta-feira</td></tr>
+                <tr><td>Colônia</td><td>Quarta-feira</td></tr>
+                <tr><td>Alto da Mangueira</td><td>Segunda-feira</td></tr>
+                <tr><td>Olho D'Água</td><td>Sexta-feira</td></tr>
+              </table>
+            </div>
+
+            <!-- AVISA II -->
+            <div class="card card-blue">
+              <div class="crono-avisa-header chip-blue">🔵 AVISA II</div>
+              <table class="crono-table">
+                <tr><th>UBS</th><th>Dia da Semana</th></tr>
+                <tr><td>Elias Boutala</td><td>Terça-feira</td></tr>
+                <tr><td>Almir Dutra</td><td>Quarta-feira</td></tr>
+                <tr><td>Carlos Antônio</td><td>Quinta-feira</td></tr>
+              </table>
+            </div>
+
+            <!-- AVISA III -->
+            <div class="card card-purple">
+              <div class="crono-avisa-header chip-purple">🟣 AVISA III</div>
+              <table class="crono-table">
+                <tr><th>UBS</th><th>Dia da Semana</th></tr>
+                <tr><td>Anastácio</td><td>Segunda-feira</td></tr>
+                <tr><td>Boa Esperança</td><td>Quarta-feira</td></tr>
+                <tr><td>Jardim Bandeirante</td><td>Terça-feira</td></tr>
+                <tr><td>Maria Nazaré</td><td>Quinta-feira</td></tr>
+              </table>
+            </div>
+
+            <!-- AVISA IV -->
+            <div class="card card-amber">
+              <div class="crono-avisa-header chip-amber">🟡 AVISA IV</div>
+              <table class="crono-table">
+                <tr><th>UBS</th><th>Dia da Semana</th></tr>
+                <tr><td>Industrial</td><td>Terça-feira</td></tr>
+                <tr><td>Cidade Nova</td><td>Terça-feira</td></tr>
+                <tr><td>Alto Alegre I</td><td>Quarta-feira</td></tr>
+                <tr><td>Alto Alegre II</td><td>Quinta-feira</td></tr>
+              </table>
+            </div>
+
+            <!-- AVISA V -->
+            <div class="card card-red">
+              <div class="crono-avisa-header chip-red">🔴 AVISA V</div>
+              <table class="crono-table">
+                <tr><th>UBS</th><th>Dia da Semana</th></tr>
+                <tr><td>Novo Oriente</td><td>Terça-feira</td></tr>
+                <tr><td>Acaracuzinho</td><td>Quarta-feira</td></tr>
+                <tr><td>Novo Maracanaú</td><td>Quinta-feira</td></tr>
+                <tr><td>Piratininga</td><td>Segunda-feira</td></tr>
+                <tr><td>Maracananzinho</td><td>Quarta-feira</td></tr>
+                <tr><td>Santo Sátiro</td><td>Terça-feira</td></tr>
+              </table>
+            </div>
+
+            <!-- AVISA VI -->
+            <div class="card card-sky">
+              <div class="crono-avisa-header chip-sky">🔷 AVISA VI</div>
+              <table class="crono-table">
+                <tr><th>UBS</th><th>Dia da Semana</th></tr>
+                <tr><td>Jary</td><td>Segunda-feira</td></tr>
+                <tr><td>Alarico Leite</td><td>Terça-feira</td></tr>
+                <tr><td>Jaçanaú</td><td>Quarta-feira</td></tr>
+                <tr><td>Ivaldo Silva</td><td>Quarta-feira</td></tr>
+                <tr><td>Mucunã</td><td>Terça-feira</td></tr>
+                <tr><td>Narcélio</td><td>Quinta-feira</td></tr>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+
+      <div id="page-pendencias" class="page">
+        <h1 class="sr-only">Pendências</h1>
+        <select class="filter-select-hidden" id="filter-pend-tipo" onchange="renderPendencias()">
+          <option value="">Todos os tipos</option>
+          <option value="visita">Visita atrasada</option>
+          <option value="cadastro">Cadastro incompleto</option>
+          <option value="vacina">Vacina pendente</option>
+          <option value="odonto">Avaliação odontológica</option>
+          <option value="encaminhamento">Encaminhamento</option>
+          <option value="exame">Exame solicitado</option>
+          <option value="retorno">Retorno agendado</option>
+        </select>
+        <select class="filter-select-hidden" id="filter-pend-prio" onchange="renderPendencias()">
+          <option value="">Todas as prioridades</option>
+          <option value="urgente">Urgente</option>
+          <option value="alta">Alta</option>
+          <option value="media">Média</option>
+          <option value="baixa">Baixa</option>
+        </select>
+        <div class="filter-bar"></div>
+
+        <div id="lista-pendencias"></div>
+      </div>
+
+      <!-- ========== AGENDA ========== -->
+      <div id="page-agenda" class="page">
+        <!-- Conteúdo movido para metas-tab-agenda -->
+      </div>
+
+      <!-- ========== MICROÁREA ========== -->
+      <!-- ========== ESTRATIFICAÇÃO DE RISCO ========== -->
+      <div id="page-condicoes" class="page">
+        <h1 class="sr-only">Condições Crônicas</h1>
+        <div class="card">
+          <div class="card-title">Monitoramento de Condições Crônicas</div>
+          <div class="tabs" role="tablist" aria-label="Condições Crônicas">
+            <button class="tab active" type="button" role="tab" id="tab-btn-tab-has" aria-selected="true" aria-controls="tab-has" onclick="switchTab(this,'tab-has')">HAS</button>
+            <button class="tab" type="button" role="tab" id="tab-btn-tab-dm" aria-selected="false" aria-controls="tab-dm" onclick="switchTab(this,'tab-dm')">DM</button>
+            <button class="tab" type="button" role="tab" id="tab-btn-tab-gestante" aria-selected="false" aria-controls="tab-gestante" onclick="switchTab(this,'tab-gestante')">Gestantes</button>
+            <button class="tab" type="button" role="tab" id="tab-btn-tab-crianca" aria-selected="false" aria-controls="tab-crianca" onclick="switchTab(this,'tab-crianca')">Crianças &lt;5</button>
+            <button class="tab" type="button" role="tab" id="tab-btn-tab-idoso" aria-selected="false" aria-controls="tab-idoso" onclick="switchTab(this,'tab-idoso')">Idosos</button>
+            <button class="tab" type="button" role="tab" id="tab-btn-tab-mental" aria-selected="false" aria-controls="tab-mental" onclick="switchTab(this,'tab-mental')">Saúde Mental</button>
+          </div>
+          <div class="tab-content active" id="tab-has" role="tabpanel" aria-labelledby="tab-btn-tab-has">
+            <div class="search-bar u-mb-12">
+              <span style="font-size:var(--text-sm);color:var(--cinza-700);align-self:center">Portadores de Hipertensão Arterial (HAS)</span>
+            </div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Última PA</th><th>Medicação</th><th>Controle</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-has-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-dm" role="tabpanel" aria-labelledby="tab-btn-tab-dm">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Última Glicemia</th><th>Medicação</th><th>Controle</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-dm-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-gestante" role="tabpanel" aria-labelledby="tab-btn-tab-gestante">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>IG</th><th>DPP</th><th>Risco</th><th>Consultas Pré-natal</th></tr></thead>
+              <tbody id="tab-gestante-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-crianca" role="tabpanel" aria-labelledby="tab-btn-tab-crianca">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Criança</th><th>Idade</th><th>Vacinação</th><th>Aleitamento</th><th>Desenvolvimento</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-crianca-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-idoso" role="tabpanel" aria-labelledby="tab-btn-tab-idoso">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Comorbidades</th><th>Mobilidade</th><th>Cuidador</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-idoso-body"></tbody>
+            </table></div>
+          </div>
+          <div class="tab-content" id="tab-mental" role="tabpanel" aria-labelledby="tab-btn-tab-mental">
+            <div class="table-wrap"><table>
+              <thead><tr><th>Paciente</th><th>Idade</th><th>Diagnóstico</th><th>Acompanhamento</th><th>Medicação</th><th>Última Visita</th></tr></thead>
+              <tbody id="tab-mental-body"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== FICHAS DE VISITA ========== -->
+      <div id="page-visitas" class="page">
+        <h1 class="sr-only">Visitas</h1>
+        <div class="notif notif-info u-mb-12">
+          <div class="notif-icon u-fs-16">i</div>
+          <div class="notif-text"><h2 class="notif-heading">Registro de Visitas</h2><p>Registre visitas acessando o domicílio em <strong>Domicílios</strong> e clicando em "Visita". Aqui é o histórico completo.</p></div>
+        </div>
+        <select class="filter-select-hidden" id="filter-visita-tipo" onchange="renderVisitas()">
+          <option value="">Todos os tipos</option>
+          <option value="rotina">Rotina</option>
+          <option value="cronico">Crônico</option>
+          <option value="gestante">Gestante</option>
+          <option value="crianca">Criança</option>
+          <option value="busca-ativa">Busca ativa</option>
+        </select>
+        <div class="filter-bar"></div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Data</th><th>Endereço</th><th>Tipo</th><th></th>
+              </tr></thead>
+              <tbody id="tabela-visitas"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PRODUÇÃO MENSAL ========== -->
+      <div id="page-metas" class="page">
+        <h1 class="sr-only">Produção Mensal</h1>
+
+        <!-- Sub-abas da página Metas -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:0" role="tablist" aria-label="Produção Mensal">
+          <button id="metas-tab-btn-metas" onclick="switchMetasTab('metas')"
+            role="tab" aria-selected="true" aria-controls="metas-tab-metas"
+            class="tab-pg-lg active">
+            <img src="icones/metas/metas.png" class="ico-22"> Metas
+          </button>
+          <button id="metas-tab-btn-palestras" onclick="switchMetasTab('palestras')"
+            role="tab" aria-selected="false" aria-controls="metas-tab-palestras"
+            class="tab-pg-lg">
+            🎤 Palestras
+          </button>
+          <button id="metas-tab-btn-agenda" onclick="switchMetasTab('agenda')"
+            role="tab" aria-selected="false" aria-controls="metas-tab-agenda"
+            class="tab-pg-lg">
+            <img src="icones/agenda/agenda.png" class="ico-22"> Agenda / Visitas
+          </button>
+        </div>
+
+        <!-- Conteúdo aba Palestras -->
+        <div id="metas-tab-palestras" role="tabpanel" aria-labelledby="metas-tab-btn-palestras" style="display:none">
+          <div class="card u-bdr-accent">
+            <div class="grad-indigo">
+              <div class="u-fw7-16">🎤 Cronograma de Palestras — PACS 2025</div>
+              <div style="font-size:var(--text-xs);opacity:.9;margin-top:3px">CI Nº 03/2025 – SMS/CS-PACS · Gerente do PACS: Emília Maria Aerre Ferreira</div>
+              <div style="font-size:var(--text-2xs);opacity:.8;margin-top:2px">Tabela sujeita a alterações pela Coordenação do PACS</div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:var(--text-sm)">
+              <thead>
+                <tr style="background:var(--surface-2)">
+                  <th class="th-label-w">Mês</th>
+                  <th class="th-label">Temas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="u-bdr-b"><td class="td-cell-label">Janeiro</td><td class="td-cell">Hanseníase / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b-bg"><td class="td-cell-label">Fevereiro</td><td class="td-cell">IST/AIDS / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b"><td class="td-cell-label">Março</td><td class="td-cell">Tuberculose / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b-bg"><td class="td-cell-label">Abril</td><td class="td-cell">Vacinação / Bolsa Família / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b"><td class="td-cell-label">Maio</td><td class="td-cell">Tabagismo / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b-bg"><td class="td-cell-label">Junho</td><td class="td-cell">Saúde do Adolescente / Síndrome Gripal / Violência Contra a Pessoa Idosa</td></tr>
+                <tr class="u-bdr-b"><td class="td-cell-label">Julho</td><td class="td-cell">Pré-Natal / Saúde da Criança / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b-bg"><td class="td-cell-label">Agosto</td><td class="td-cell">Aleitamento Materno / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b"><td class="td-cell-label">Setembro</td><td class="td-cell">Hanseníase / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b-bg"><td class="td-cell-label">Outubro</td><td class="td-cell">Saúde do Idoso / Prevenção de CA de mama e colo uterino / Síndrome Gripal</td></tr>
+                <tr class="u-bdr-b"><td class="td-cell-label">Novembro</td><td class="td-cell">Hipertensão e Diabetes / Saúde do Homem / Síndrome Gripal</td></tr>
+                <tr><td class="td-cell-label">Dezembro</td><td class="td-cell">Planejamento Familiar / IST/AIDS / Síndrome Gripal</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Conteúdo aba Metas (original) -->
+        <div id="metas-tab-metas" role="tabpanel" aria-labelledby="metas-tab-btn-metas">
+
+        <!-- Linha superior: config + resumo -->
+        <div class="two-col" style="margin-bottom:16px">
+          <!-- Config de metas -->
+          <div class="card">
+            <div class="card-title"><img src="icones/configuracoes/configuracoes.png" class="ico-28"> Configurar Metas</div>
+            <div style="display:grid;gap:10px">
+              <div class="u-grid-2">
+                <div class="form-group">
+                  <label for="meta-manha">Visitas por turno — Manhã</label>
+                  <input class="input" type="number" id="meta-manha" min="1" max="30" value="5" oninput="salvarMetas();renderMetas()">
+                </div>
+                <div class="form-group">
+                  <label for="meta-tarde">Visitas por turno — Tarde</label>
+                  <input class="input" type="number" id="meta-tarde" min="1" max="30" value="5" oninput="salvarMetas();renderMetas()">
+                </div>
+              </div>
+              <div class="u-grid-2">
+                <div class="form-group">
+                  <label for="meta-sabado">Incluir sábados?</label>
+                  <select class="input" id="meta-sabado" onchange="salvarMetas();renderMetas()">
+                    <option value="nao">Não</option>
+                    <option value="sim">Sim</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="meta-domingo">Incluir domingos?</label>
+                  <select class="input" id="meta-domingo" onchange="salvarMetas();renderMetas()">
+                    <option value="nao">Não</option>
+                    <option value="sim">Sim</option>
+                  </select>
+                </div>
+              </div>
+              <div style="padding:12px;background:var(--verde-fraco);border-radius:var(--radius-sm);font-size:var(--text-sm)">
+                <strong>Meta mensal:</strong> <span id="meta-calc" style="color:var(--verde);font-size:var(--text-md);font-weight:800"></span> visitas
+                <div style="color:var(--cinza-700);margin-top:4px;font-size:var(--text-xs)" id="meta-calc-desc"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Resumo do mês -->
+          <div class="card">
+            <div class="card-title"><img src="icones/metas/metas.png" class="ico-28"> Resumo — <span id="metas-mes-label"></span></div>
+            <div id="metas-resumo"></div>
+          </div>
+        </div>
+
+        <!-- Calendário — largura total -->
+        <div class="card u-w100">
+          <div class="u-flex-between-mb16">
+            <div class="card-title u-m0"><img src="icones/agenda/agenda.png" class="ico-28"> Calendário de Visitas</div>
+            <div class="u-flex-8-ac">
+              <button class="btn btn-secondary btn-sm" onclick="metasMesOffset--;renderMetas()">&#8592;</button>
+              <span id="metas-nav-label" class="metas-nav-label"></span>
+              <button class="btn btn-secondary btn-sm" onclick="metasMesOffset++;renderMetas()">&#8594;</button>
+            </div>
+          </div>
+          <div id="metas-calendario"></div>
+        </div>
+
+        <!-- Alerta de déficit -->
+        <div id="metas-alerta" class="u-mt0"></div>
+        </div><!-- /metas-tab-metas -->
+
+        <!-- Conteúdo aba Agenda / Visitas -->
+        <div id="metas-tab-agenda" role="tabpanel" aria-labelledby="metas-tab-btn-agenda" style="display:none">
+        <h1 class="sr-only">Agenda</h1>
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-title">Planejar Visita</div>
+              <div class="form-grid col1 u-gap-10">
+                <div class="form-group">
+                  <label for="agenda-data">Data da Visita</label>
+                  <input class="input date-input" type="text" id="agenda-data" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)">
+                </div>
+                <div class="form-group">
+                  <label for="agenda-familia">Família</label>
+                  <select class="input" id="agenda-familia">
+                    <option value="">Selecione a família...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="agenda-tipo">Tipo de Visita</label>
+                  <select class="input" id="agenda-tipo">
+                    <option>Visita de rotina</option>
+                    <option>Acompanhamento de crônico</option>
+                    <option>Gestante</option>
+                    <option>Criança menor de 5 anos</option>
+                    <option>Idoso</option>
+                    <option>Saúde Mental</option>
+                    <option>Alto risco</option>
+                    <option>Cadastramento</option>
+                    <option>Busca ativa</option>
+                    <option>Visita emergencial</option>
+                  </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="agendarVisita()">Agendar</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title">Visitas Programadas</div>
+              <div id="lista-agenda"></div>
+            </div>
+          </div>
+        </div>
+      
+        </div>
+      </div>
+
+      <!-- ========== EXPORTAR ========== -->
+      <div id="page-exportar" class="page">
+
+        <!-- ── BACKUP COMPLETO ── -->
+        <div class="card u-bdr-azul">
+          <div class="u-flex-between-mb12">
+            <div>
+              <div class="card-title u-mb-4"><img src="icones/sistema/ico_backup.png" class="ico-28"> Backup Completo do Sistema</div>
+              <p style="font-size:var(--text-xs);color:var(--cinza-500);margin:0">Exporta <strong>todos os dados</strong>: domicílios, famílias, indivíduos, visitas, agenda, pendências, fichas, históricos e configurações</p>
+            </div>
+            <button class="btn btn-primary" style="gap:8px;white-space:nowrap" onclick="gerarBackupCompleto()">
+              <img src="icones/sistema/ico_backup.png" class="ico-22"> Baixar Backup JSON
+            </button>
+          </div>
+          <div id="backup-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;padding:12px;background:var(--azul-fraco);border-radius:var(--radius-sm)">
+            <!-- preenchido por renderBackupStats() -->
+          </div>
+          <div style="margin-top:12px;padding:10px;background:var(--cinza-100);border-radius:var(--radius-sm);font-size:var(--text-2xs);color:var(--cinza-600)">
+            <strong><img src="icones/individuo/ico_ind_anotacoes.png" class="ico-16"> O que está incluído no backup:</strong> config do ACS · domicílios · famílias · indivíduos (com medicações, vacinas, nome do pai/mãe) · visitas domiciliares · agenda · pendências · metas · fichas de acompanhamento · histórico de rastreio de hanseníase · ajustes de metas
+          </div>
+        </div>
+
+        <!-- ── RESTAURAÇÃO ── -->
+        <div class="card u-bdr-verde">
+          <div class="card-title u-mb-4"><img src="icones/sistema/ico_restaurar.png" class="ico-28"> Restaurar Backup</div>
+          <p style="font-size:var(--text-xs);color:var(--cinza-500);margin-bottom:12px">Selecione um arquivo JSON exportado por este sistema. <strong>Todos os dados atuais serão substituídos.</strong></p>
+          <div class="u-flex-10-wrap">
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importarBackupCompleto(this)">
+            <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">
+              <img src="icones/sistema/ico_restaurar.png" class="ico-22"> Selecionar arquivo JSON
+            </button>
+            <button class="btn btn-secondary" onclick="abrirTemplateBackup()">
+              <img src="icones/sistema/ico_template.png" class="ico-22"> Ver Template JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- ── HISTÓRICO DE BACKUPS ── -->
+        <div class="card">
+          <div class="u-flex-between-mb12">
+            <div class="card-title u-m0"><img src="icones/sistema/ico_historico.png" class="ico-28"> Histórico de Backups</div>
+            <button class="btn btn-secondary btn-sm" onclick="limparHistoricoBackups()">Limpar histórico</button>
+          </div>
+          <div id="historico-backups">
+            <!-- preenchido por renderHistoricoBackups() -->
+          </div>
+        </div>
+
+
+
+
+
+      </div>
+
+      <!-- ========== RELATÓRIOS ========== -->
+      <div id="page-configuracoes" class="page">
+
+        <!-- Inputs ocultos mantidos para compatibilidade com salvarConfig() / renderConfig() -->
+        <div style="display:none">
+          <input id="cfg-nome"><input id="cfg-cpf"><input id="cfg-cns"><input id="cfg-cbo">
+          <input id="cfg-ine"><input id="cfg-esf"><input id="cfg-microarea">
+          <input id="cfg-municipio"><input id="cfg-bairro"><input id="cfg-cnes">
+          <span id="cfg-save-status">✓ Salvo</span>
+        </div>
+
+        <style>
+          .cfg-accordion{border:1px solid var(--bdr);border-radius:var(--r-md);background:var(--surface);margin-bottom:10px;overflow:hidden}
+          .cfg-accordion>summary{list-style:none;cursor:pointer;padding:14px 16px;font-size:var(--text-sm);font-weight:700;color:var(--slate-900);display:flex;align-items:center;gap:10px;user-select:none;background:var(--surface)}
+          .cfg-accordion>summary::-webkit-details-marker{display:none}
+          .cfg-accordion>summary::after{content:"▸";margin-left:auto;font-size:12px;color:var(--slate-400);transition:transform .2s}
+          .cfg-accordion[open]>summary::after{transform:rotate(90deg)}
+          .cfg-accordion>summary:hover{background:var(--surface-2)}
+          .cfg-accordion-body{padding:0 16px 16px}
+        </style>
+
+        <!-- ── 🎨 PERSONALIZAÇÃO ── -->
+        <details class="cfg-accordion" id="acc-personalizacao" open>
+          <summary>🎨 Personalização</summary>
+          <div class="cfg-accordion-body" id="pers-accordion-slot">
+            <!-- Painel de personalização injetado por personalizacao.js -->
+            <div style="color:var(--slate-400);font-size:var(--text-xs);padding:8px 0">Carregando painel de personalização…</div>
+          </div>
+        </details>
+
+        <!-- ── 👤 PERFIL DO ACS ── -->
+        <details class="cfg-accordion" id="acc-perfil">
+          <summary>👤 Perfil do ACS</summary>
+          <div class="cfg-accordion-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px">
+              <span style="font-size:var(--text-sm);color:var(--slate-500)">Dados do agente comunitário de saúde</span>
+              <button class="btn btn-secondary btn-sm" onclick="abrirModalEditarPerfil()">✎ Editar dados</button>
+            </div>
+            <div id="cfg-perfil-view" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 20px">
+              <!-- preenchido por renderConfig() -->
+            </div>
+          </div>
+        </details>
+
+        <!-- ── 📤 EXPORTAR / IMPORTAR ── -->
+        <details class="cfg-accordion" id="acc-exportar">
+          <summary>📤 Exportar e Importar Dados</summary>
+          <div class="cfg-accordion-body">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="btn btn-primary" style="gap:8px" onclick="gerarBackupCompleto()">
+                <img src="icones/sistema/ico_backup.png" class="ico-22"> Baixar Backup JSON
+              </button>
+              <button class="btn btn-secondary" onclick="document.getElementById('import-file-cfg').click()">
+                <img src="icones/sistema/ico_restaurar.png" class="ico-22"> Restaurar Backup
+              </button>
+              <button class="btn btn-secondary" onclick="abrirTemplateBackup()">
+                <img src="icones/sistema/ico_template.png" class="ico-22"> Ver Template JSON
+              </button>
+              <input type="file" id="import-file-cfg" accept=".json" style="display:none" onchange="importarBackupCompleto(this)">
+            </div>
+            <div id="backup-stats-cfg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;padding:12px;background:var(--azul-fraco);border-radius:var(--radius-sm)"></div>
+            <div style="margin-top:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:var(--text-sm);font-weight:700;color:var(--slate-700)"><img src="icones/sistema/ico_historico.png" class="ico-22"> Histórico de Backups</span>
+                <button class="btn btn-secondary btn-sm" onclick="limparHistoricoBackups()">Limpar</button>
+              </div>
+              <div id="historico-backups-cfg"></div>
+            </div>
+          </div>
+        </details>
+
+        <!-- ── 💾 SISTEMA E ARMAZENAMENTO ── -->
+        <details class="cfg-accordion" id="acc-sistema">
+          <summary>💾 Sistema de Armazenamento</summary>
+          <div class="cfg-accordion-body" id="cfg-sistema-card">
+            <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:12px">
+              <button class="btn btn-secondary btn-sm" onclick="_cfgAtualizarSistema()">↻ Atualizar</button>
+            </div>
+            <div id="cfg-sistema-info" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+              <div style="background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px">
+                <div style="font-size:var(--text-xs);color:var(--slate-500);font-weight:600;margin-bottom:4px">VERSÃO</div>
+                <div style="font-size:var(--text-md);font-weight:800;color:var(--slate-900)">v17</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-400)">ACS Neto · Tablet</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px">
+                <div style="font-size:var(--text-xs);color:var(--slate-500);font-weight:600;margin-bottom:4px">ARMAZENAMENTO</div>
+                <div style="font-size:var(--text-md);font-weight:800;color:var(--slate-900)" id="cfg-ls-usado">–</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-400)">de 5120 KB disponível</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px">
+                <div style="font-size:var(--text-xs);color:var(--slate-500);font-weight:600;margin-bottom:4px">FAMÍLIAS</div>
+                <div style="font-size:var(--text-md);font-weight:800;color:var(--slate-900)" id="cfg-ct-familias">–</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-400)">domicílios cadastrados</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px">
+                <div style="font-size:var(--text-xs);color:var(--slate-500);font-weight:600;margin-bottom:4px">INDIVÍDUOS</div>
+                <div style="font-size:var(--text-md);font-weight:800;color:var(--slate-900)" id="cfg-ct-individuos">–</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-400)">pessoas cadastradas</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px">
+                <div style="font-size:var(--text-xs);color:var(--slate-500);font-weight:600;margin-bottom:4px">VISITAS</div>
+                <div style="font-size:var(--text-md);font-weight:800;color:var(--slate-900)" id="cfg-ct-visitas">–</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-400)">registros no histórico</div>
+              </div>
+              <div style="background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:12px 14px">
+                <div style="font-size:var(--text-xs);color:var(--slate-500);font-weight:600;margin-bottom:4px">PENDÊNCIAS</div>
+                <div style="font-size:var(--text-md);font-weight:800;color:var(--slate-900)" id="cfg-ct-pendencias">–</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-400)">itens em aberto</div>
+              </div>
+            </div>
+            <div style="margin-top:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span style="font-size:var(--text-xs);font-weight:700;color:var(--slate-700)">Uso do localStorage</span>
+                <span style="font-size:var(--text-xs);color:var(--slate-500)" id="cfg-ls-pct">–%</span>
+              </div>
+              <div style="background:var(--bdr);border-radius:var(--r-full);height:8px;overflow:hidden">
+                <div id="cfg-ls-bar" style="height:100%;border-radius:var(--r-full);background:var(--emerald-500);transition:width .5s,background .3s;width:0%"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px">
+                <span style="font-size:var(--text-2xs);color:var(--slate-400)">0 KB</span>
+                <span style="font-size:var(--text-2xs);color:var(--slate-400)">5120 KB</span>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:10px 14px;background:var(--surface-2);border:1px solid var(--bdr);border-radius:var(--r-md)">
+              <div style="font-size:var(--text-xs);font-weight:700;color:var(--slate-700);margin-bottom:8px">Informações do dispositivo</div>
+              <div id="cfg-device-info" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:var(--text-xs);color:var(--slate-500)">
+                <!-- preenchido por JS -->
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- ── 🗑️ GERENCIAR DADOS E CONTA ── -->
+        <details class="cfg-accordion" id="acc-dados">
+          <summary>🗑️ Gerenciar Dados e Conta</summary>
+          <div class="cfg-accordion-body">
+            <p style="font-size:var(--text-sm);color:var(--cinza-700);margin-bottom:14px">Use com cautela. Estas ações são irreversíveis.</p>
+            <div class="u-flex-col-8" style="margin-bottom:20px">
+              <button class="btn btn-secondary" onclick="confirmarLimparVisitas()">Limpar Fichas de Visita</button>
+              <button class="btn btn-warning"   onclick="confirmarLimparDomicilios()">Limpar Domicílios</button>
+              <button class="btn btn-danger"    onclick="confirmarApagarTudo()">Apagar Todos os Dados</button>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--bdr);margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:44px;height:44px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(255,117,51,.15),rgba(132,69,204,.15))">
+                <svg style="width:20px;height:20px;stroke:var(--slate-600);fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div style="min-width:0">
+                <div style="font-weight:700;font-size:var(--text-sm);color:var(--slate-900)" id="acs-nome">José Neto</div>
+                <div style="font-size:var(--text-xs);color:var(--slate-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="acs-area">Microárea 09 · ESF Maria Heleny Matos Brandão</div>
+              </div>
+            </div>
+            <button id="btn-logout" onclick="fazerLogout()"
+              style="width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border:1px solid rgba(232,51,85,.35);background:rgba(232,51,85,.10);color:#e83355;border-radius:8px;font-size:var(--text-sm);font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s">
+              <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg> Sair da conta
+            </button>
+            <hr style="border:none;border-top:1px solid var(--bdr);margin:16px 0">
+            <div style="font-size:var(--text-sm);font-weight:700;color:var(--slate-900);margin-bottom:8px">Sobre</div>
+            <p style="font-size:var(--text-sm);color:var(--cinza-700);line-height:1.6;margin:0">
+              <strong>ACS Neto</strong> — Agente Comunitário de Saúde.<br>
+              Baseado no modelo e-SUS Atenção Básica (RNDS/DATASUS).<br>
+              Dados armazenados localmente no dispositivo.
+            </p>
+          </div>
+        </details>
+
+        <!-- ── 🏙️ MEU MUNICÍPIO ── -->
+        <details class="cfg-accordion" id="acc-municipio">
+          <summary>🏙️ Meu Município</summary>
+          <div class="cfg-accordion-body">
+            <p style="font-size:var(--text-sm);color:var(--slate-500);margin-bottom:12px">
+              Acesse informações e configurações referentes ao seu município de atuação.
+            </p>
+            <button class="btn btn-secondary" onclick="showPage('municipio')">
+              <img src="icones/municipio/municipio.png" class="ico-22"> Abrir página Meu Município
+            </button>
+          </div>
+        </details>
+      </div>
+
+      <!-- Modal edição do perfil do ACS -->
+      <div class="modal-overlay" id="modal-editar-perfil">
+        <div class="modal" style="max-width:680px">
+          <div class="modal-header">
+            <h2><img src="icones/individuo/ico_ind_identificacao.png" class="ico-28"> Editar Perfil do ACS</h2>
+            <button class="close-btn" onclick="closeModal('modal-editar-perfil')">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="form-group"><label for="mp-nome">Nome Completo</label><input class="input" type="text" id="mp-nome" placeholder="Nome do ACS"></div>
+              <div class="form-group"><label for="mp-cpf">CPF</label><input class="input" type="text" id="mp-cpf" placeholder="000.000.000-00"></div>
+              <div class="form-group"><label for="mp-cns">CNS do ACS</label><input class="input" type="text" id="mp-cns" placeholder="Cartão Nacional de Saúde"></div>
+              <div class="form-group"><label for="mp-cbo">CBO</label><input class="input" type="text" id="mp-cbo" placeholder="515105"></div>
+              <div class="form-group"><label for="mp-ine">INE da Equipe</label><input class="input" type="text" id="mp-ine" placeholder="INE"></div>
+              <div class="form-group"><label for="mp-esf">ESF / UBS</label><input class="input" type="text" id="mp-esf" placeholder="Nome da unidade"></div>
+              <div class="form-group"><label for="mp-microarea">Microárea</label><input class="input" type="text" id="mp-microarea" placeholder="Ex: 09"></div>
+              <div class="form-group"><label for="mp-municipio">Município</label><input class="input" type="text" id="mp-municipio" placeholder="Nome do município"></div>
+              <div class="form-group"><label for="mp-bairro">Bairro</label><input class="input" type="text" id="mp-bairro" placeholder="Nome do bairro"></div>
+              <div class="form-group"><label for="mp-cnes">CNES</label><input class="input" type="text" id="mp-cnes" placeholder="Código CNES"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-editar-perfil')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarPerfilModal()"><img src="icones/sistema/ico_backup.png" class="ico-22"> Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ACOMPANHAMENTO ========== -->
+      <div id="page-acompanhamento" class="page">
+        <h1 class="sr-only">Acompanhamento</h1>
+        <!-- Layout 2 colunas: lista esquerda + ficha direita -->
+        <div id="acomp-layout" class="acomp-layout">
+
+          <!-- ── COLUNA ESQUERDA: lista de pacientes ─────────────── -->
+          <div class="acomp-col-lista">
+            <!-- Cabeçalho: tipo + progresso -->
+            <div class="acomp-lista-header">
+              <div style="display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-2)">
+                <button class="btn btn-secondary btn-sm" onclick="showPage('dashboard')" title="Voltar ao Painel de Controle" style="padding:0 10px;height:28px;font-size:var(--text-xs);display:flex;align-items:center;gap:4px">
+                  ← Painel
+                </button>
+                <div id="acomp-tipo-label" class="acomp-tipo-label" style="flex:1;margin-bottom:0">— Selecione uma ficha —</div>
+              </div>
+              <div id="acomp-progresso" class="acomp-progresso" style="display:none">
+                <div class="acomp-prog-row">
+                  <span class="acomp-fichas-sub">Fichas do mês</span>
+                  <span id="acomp-pct-label" class="acomp-pct-label">0%</span>
+                </div>
+                <div class="acomp-prog-bar-bg">
+                  <div id="acomp-pct-bar" class="acomp-prog-bar-fill"></div>
+                </div>
+                <div class="acomp-prog-counts">
+                  <span id="acomp-ok-count" class="u-color-verde">✅ 0</span>
+                  <span id="acomp-pend-count" class="u-color-vermelho">⏳ 0</span>
+                </div>
+              </div>
+              <!-- Busca + filtros -->
+              <div class="acomp-search-wrap">
+                <input type="text" id="acomp-search" placeholder="🔍 Buscar paciente..."
+                  class="input acomp-search-input" oninput="filtrarListaAcomp(this.value)">
+              </div>
+              <div class="acomp-filter-btns">
+                <button onclick="filtrarStatusAcomp('todos')"   id="acomp-btn-todos"  class="btn btn-primary   btn-sm acomp-fbtn">Todos</button>
+                <button onclick="filtrarStatusAcomp('pendente')" id="acomp-btn-pend"  class="btn btn-secondary btn-sm acomp-fbtn">Pendentes</button>
+                <button onclick="filtrarStatusAcomp('feito')"   id="acomp-btn-feito"  class="btn btn-secondary btn-sm acomp-fbtn">Feitos</button>
+              </div>
+            </div>
+            <!-- Lista rolável -->
+            <div id="acomp-lista" class="acomp-lista-scroll"></div>
+          </div>
+
+          <!-- ── COLUNA DIREITA: ficha do paciente selecionado ────── -->
+          <div id="acomp-col-ficha" class="acomp-col-ficha">
+            <!-- Placeholder quando nenhum paciente selecionado -->
+            <div id="acomp-empty" class="acomp-empty">
+              <div id="acomp-empty-ico" class="acomp-empty-ico">📋</div>
+              <div class="acomp-empty-title">Selecione um paciente</div>
+              <div class="acomp-empty-sub">Clique em um nome na lista para abrir a ficha</div>
+            </div>
+            <!-- Header do paciente selecionado (oculto até seleção) -->
+            <div id="acomp-ficha-header" class="acomp-ficha-header" style="display:none">
+              <button class="acomp-back-btn" onclick="acompVoltarLista()" title="Voltar à lista">←</button>
+              <span id="acomp-ficha-avatar" class="acomp-ficha-avatar"></span>
+              <div class="acomp-ficha-header-info">
+                <div id="acomp-ficha-nome" class="acomp-ficha-nome"></div>
+                <div id="acomp-ficha-sub"  class="acomp-ficha-sub"></div>
+              </div>
+            </div>
+            <!-- Conteúdo da ficha (scroll) -->
+            <div id="acomp-ficha-content" class="acomp-ficha-scroll" style="display:none"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========== MEU MUNICÍPIO ========== -->
+      <div id="page-municipio" class="page">
+        <h1 class="sr-only">Informações do Município</h1>
+        <div id="municipio-content"><!-- renderizado por JS --></div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── MODAIS DE EXPORTAÇÃO (movidos para fora do content) ── -->
+      <!-- ── MODAL TEMPLATE JSON ── -->
+      <div id="modal-template-json" class="modal-overlay">
+        <div class="modal modal-xl">
+          <div class="modal-header">
+            <div><h2><img src="icones/sistema/ico_template.png" class="ico-28"> Template de Backup JSON</h2><div class="u-sub-text">Estrutura completa do arquivo de backup</div></div>
+            <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-template-json')">✕</button>
+          </div>
+          <div class="modal-body modal-body-flush">
+            <div class="modal-toolbar">
+              <button class="btn btn-primary btn-sm" onclick="copiarTemplate()"><img src="icones/sistema/ico_copiar.png" class="ico-22"> Copiar</button>
+              <button class="btn btn-secondary btn-sm" onclick="baixarTemplate()"><img src="icones/sistema/ico_backup.png" class="ico-22"> Baixar template.json</button>
+            </div>
+            <pre id="template-json-content" class="code-preview"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MODAL CONFIRMAÇÃO RESTAURAR ── -->
+      <div id="modal-confirm-restore" class="modal-overlay">
+        <div class="modal modal-md">
+          <div class="modal-header">
+            <h2><img src="icones/sistema/ico_alerta.png" class="ico-28"> Confirmar Restauração</h2>
+            <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-confirm-restore')">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="u-alert-red">
+              <strong><img src="icones/sistema/ico_alerta.png" class="ico-16"> Atenção:</strong> Esta operação irá <strong>substituir TODOS os dados atuais</strong> pelos dados do arquivo selecionado. Esta ação não pode ser desfeita.
+            </div>
+            <div id="restore-preview" class="u-info-gray"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn btn-secondary" onclick="closeModal('modal-confirm-restore')">Cancelar</button>
+              <button class="btn btn-danger" id="btn-confirmar-restore" onclick="confirmarRestaurar()">✓ Restaurar agora</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /modal-confirm-restore -->
+
+      <!-- Modal de confirmação genérico (usado por app-medicamentos.js) -->
+      <div id="confirm-modal" class="modal-overlay" style="display:none">
+        <div class="modal modal-sm">
+          <div class="modal-body">
+            <p id="confirm-msg" class="confirm-msg"></p>
+            <div class="u-flex-end-8">
+              <button class="btn btn-secondary btn-sm" id="confirm-cancel">Cancelar</button>
+              <button class="btn btn-danger btn-sm" id="confirm-ok">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /confirm-modal -->
+
+
+
+
+<!-- ===== MODAIS ===== -->
+
+<!-- Modal: Ficha de Acompanhamento -->
+<div class="modal-overlay" id="modal-acomp-ficha">
+  <div class="modal" style="max-width:720px;width:95%">
+    <div class="modal-header u-flex-between">
+      <div class="u-min-w0">
+        <div class="u-flex-10">
+          <span id="modal-acomp-avatar" style="font-size:26px;flex-shrink:0"></span>
+          <div class="u-min-w0">
+            <div id="modal-acomp-nome" style="font-size:var(--text-md);font-weight:800;color:var(--slate-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="modal-acomp-sub" class="modal-header-sub"></div>
+          </div>
+        </div>
+      </div>
+      <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-acomp-ficha')">✕</button>
+    </div>
+    <div id="modal-acomp-body" class="modal-body modal-body-acomp"></div>
+  </div>
+</div>
+
+<!-- Modal Nova Família -->
+<!-- ===== MODAL NOVO/EDITAR DOMICÍLIO ===== -->
+<div class="modal-overlay" id="modal-domicilio">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h2 id="modal-domicilio-titulo"><img src="icones/sistema/ico_visita_familia.png" class="ico-28"> Novo Domicílio</h2>
+      <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-domicilio')">✕</button>
+    </div>
+
+    <!-- ── NAVEGAÇÃO DAS ABAS ── -->
+    <div class="dom-tab-nav">
+      <button type="button" id="dom-tab-btn-1" onclick="domSwitchTab(1)"
+        class="tab-pg active">
+        <img src="icones/sistema/ico_localizacao.png" class="ico-22"> Cadastro
+      </button>
+      <button type="button" id="dom-tab-btn-2" onclick="domSwitchTab(2)"
+        class="tab-pg">
+        <img src="icones/individuo/ico_ind_saude.png" class="ico-22"> Condições
+      </button>
+      <button type="button" id="dom-tab-btn-3" onclick="domSwitchTab(3)"
+        class="tab-pg">
+        <img src="icones/animais/ico_cachorro.png" class="ico-22"> Animais
+      </button>
+      <!-- Salvar na barra de abas -->
+      <button type="button" onclick="salvarDomicilio()" class="btn btn-primary" style="margin-left:auto"><img src="icones/sistema/ico_backup.png" class="ico-22"> Salvar</button>
+    </div>
+
+    <div class="modal-body" style="padding:20px">
+
+      <!-- ══════════════════════════════════════════
+           ABA 1 — CADASTRO DOMICILIAR
+      ══════════════════════════════════════════ -->
+      <div id="dom-tab-1">
+      <!-- Campos ocultos auxiliares -->
+        <input type="hidden" id="dom-cod-microarea" value="">
+        <input type="hidden" id="dom-bairro-outro" value="">
+
+        <div class="form-grid">
+          <!-- Tipo de Imóvel e Tipo de Domicílio -->
+          <div class="form-group">
+            <label for="dom-tipo-imovel">Tipo de Imóvel</label>
+            <select class="input" id="dom-tipo-imovel">
+              <option value="Domicilio">Domicílio</option>
+              <option value="Comercio">Comércio</option>
+              <option value="Terreno baldio">Terreno baldio</option>
+              <option value="Ponto estratégico">Ponto estratégico</option>
+              <option value="Instituição">Instituição</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-tipo-dom">Tipo de Domicílio</label>
+            <select class="input" id="dom-tipo-dom">
+              <option value="Casa">Casa</option>
+              <option value="Apartamento">Apartamento</option>
+              <option value="Cômodo">Cômodo</option>
+              <option value="Cortiço">Cortiço</option>
+              <option value="Ocupação">Ocupação</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+
+          <div class="section-divider span2 u-m-divider"><img src="icones/sistema/ico_localizacao.png" class="ico-22"> Endereço</div>
+
+          <!-- 1º Número, 2º Nome do Logradouro -->
+          <div class="form-group">
+            <label for="dom-numero">Número</label>
+            <input class="input" id="dom-numero" placeholder="103">
+          </div>
+          <div class="form-group">
+            <label for="dom-logradouro">Nome do Logradouro *</label>
+            <input class="input" id="dom-logradouro" placeholder="Nome da rua, quadra...">
+          </div>
+          <div class="form-group">
+            <label for="dom-fk-logradouro">Tipo de Logradouro</label>
+            <select class="input" id="dom-fk-logradouro">
+              <option value="Rua">Rua</option>
+              <option value="Avenida">Avenida</option>
+              <option value="Travessa">Travessa</option>
+              <option value="Alameda">Alameda</option>
+              <option value="Viela">Viela</option>
+              <option value="Quadra">Quadra</option>
+              <option value="Estrada">Estrada</option>
+              <option value="Rodovia">Rodovia</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-complemento">Complemento</label>
+            <input class="input" id="dom-complemento" placeholder="Apto, fundos, casa 2...">
+          </div>
+          <div class="form-group">
+            <label for="dom-bairro">Bairro</label>
+            <select class="input" id="dom-bairro">
+              <option value="">Selecione o bairro...</option>
+              <option value="Acaracuzinho">Acaracuzinho</option>
+              <option value="Parque Tijuca">Parque Tijuca</option>
+              <option value="Santo Sátiro">Santo Sátiro</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-cep">CEP</label>
+            <input class="input" id="dom-cep" placeholder="61900-000" maxlength="9" oninput="mascaraCEP(this)">
+          </div>
+          <div class="form-group span2">
+            <label for="dom-referencia">Ponto de Referência</label>
+            <input class="input" id="dom-referencia" placeholder="Próximo à padaria...">
+          </div>
+
+          <div class="section-divider span2 u-m-divider"><img src="icones/sistema/ico_localizacao.png" class="ico-22"> Localização</div>
+
+          <div class="form-group">
+            <label for="dom-latitude">Latitude</label>
+            <input class="input" id="dom-latitude" placeholder="-3.845707" inputmode="decimal">
+          </div>
+          <div class="form-group">
+            <label for="dom-longitude">Longitude</label>
+            <input class="input" id="dom-longitude" placeholder="-38.622579" inputmode="decimal">
+          </div>
+          <div class="form-group span2">
+            <button type="button" class="btn btn-secondary u-flex-center" onclick="capturarGeolocalizacao()" id="btn-geoloc">
+              <img src="icones/sistema/ico_localizacao.png" class="ico-22"> Capturar Localização Atual do Dispositivo
+            </button>
+            <div id="geoloc-status" style="font-size:var(--text-xs);color:var(--cinza-600);margin-top:6px;display:none"></div>
+          </div>
+          <div class="form-group span2">
+            <label for="dom-tipo-acesso">Tipo de Acesso</label>
+            <select class="input" id="dom-tipo-acesso">
+              <option value="Rua Pavimentada">Rua Pavimentada</option>
+              <option value="Rua Não Pavimentada">Rua Não Pavimentada</option>
+              <option value="Servidão">Servidão</option>
+              <option value="Trilha/Caminho">Trilha/Caminho</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           ABA 2 — CONDIÇÕES DE MORADIA
+      ══════════════════════════════════════════ -->
+      <div id="dom-tab-2" style="display:none">
+        <div class="form-grid">
+
+          <div class="section-divider span2 u-mt0"><img src="icones/sistema/ico_visita_familia.png" class="ico-22"> Características da Moradia</div>
+          <div class="form-group">
+            <label for="dom-situacao-moradia">Situação de Moradia</label>
+            <select class="input" id="dom-situacao-moradia">
+              <option value="">Selecione...</option>
+              <option value="Próprio">Próprio</option>
+              <option value="Alugado">Alugado</option>
+              <option value="Cedido">Cedido</option>
+              <option value="Financiado">Financiado</option>
+              <option value="Ocupação/invasão">Ocupação/invasão</option>
+              <option value="Situação de rua">Situação de rua</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-material">Material de Construção</label>
+            <select class="input" id="dom-material">
+              <option value="Alvenaria">Alvenaria</option>
+              <option value="Madeira">Madeira</option>
+              <option value="Taipa">Taipa</option>
+              <option value="Material aproveitado">Material aproveitado</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-num-comodos">Nº de Cômodos</label>
+            <input class="input" id="dom-num-comodos" type="number" min="1" max="30" placeholder="5">
+          </div>
+
+          <div class="section-divider span2"><img src="icones/sistema/ico_agua.png" class="ico-22"> Água</div>
+          <div class="form-group">
+            <label for="dom-disp-agua">Disponibilidade de Água</label>
+            <select class="input" id="dom-disp-agua">
+              <option value="Sim">Sim</option>
+              <option value="Não">Não</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-agua">Forma de Abastecimento</label>
+            <select class="input" id="dom-agua">
+              <option value="Rede encanada">Rede encanada</option>
+              <option value="Poço/nascente">Poço/nascente</option>
+              <option value="Cisternas">Cisternas</option>
+              <option value="Carro pipa">Carro pipa</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-agua-consumo">Água para Consumo</label>
+            <select class="input" id="dom-agua-consumo">
+              <option value="Mineral">Mineral</option>
+              <option value="Clorada">Clorada</option>
+              <option value="Filtrada">Filtrada</option>
+              <option value="Fervida">Fervida</option>
+              <option value="Sem tratamento">Sem tratamento</option>
+            </select>
+          </div>
+
+          <div class="section-divider span2"><img src="icones/sistema/ico_saneamento.png" class="ico-22"> Saneamento</div>
+          <div class="form-group">
+            <label for="dom-esgoto">Esgoto Sanitário</label>
+            <select class="input" id="dom-esgoto">
+              <option value="Rede de Esgoto">Rede de Esgoto</option>
+              <option value="Fossa séptica">Fossa séptica</option>
+              <option value="Fossa rudimentar">Fossa rudimentar</option>
+              <option value="Direto para rios">Direto para rios</option>
+              <option value="Céu aberto">Céu aberto</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-lixo">Destino do Lixo</label>
+            <select class="input" id="dom-lixo">
+              <option value="Coletado">Coletado</option>
+              <option value="Queimado">Queimado</option>
+              <option value="Jogado no terreno">Jogado no terreno</option>
+              <option value="Enterrado">Enterrado</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+
+          <div class="section-divider span2"><img src="icones/sistema/ico_energia.png" class="ico-22"> Energia</div>
+          <div class="form-group">
+            <label for="dom-disp-energia">Disponibilidade de Energia</label>
+            <select class="input" id="dom-disp-energia">
+              <option value="Sim">Sim</option>
+              <option value="Não">Não</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-energia">Tipo de Energia Elétrica</label>
+            <select class="input" id="dom-energia">
+              <option value="Concessionária">Concessionária</option>
+              <option value="Sem energia elétrica">Sem energia elétrica</option>
+              <option value="Com gerador">Com gerador</option>
+              <option value="Gato (irregular)">Gato (irregular)</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           ABA 3 — ANIMAIS DOMÉSTICOS
+      ══════════════════════════════════════════ -->
+      <div id="dom-tab-3" style="display:none">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label for="dom-possui-animais">Possui Animais?</label>
+            <select class="input" id="dom-possui-animais" onchange="toggleAnimais(this.value)">
+              <option value="Não">Não</option>
+              <option value="Sim">Sim</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dom-num-animais">Nº Total de Animais</label>
+            <input class="input" id="dom-num-animais" type="number" min="0" value="0" placeholder="0">
+          </div>
+
+          <div id="dom-animais-detalhes" class="u-span2-hidden">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+              <div class="form-group">
+                <label for="dom-cachorros"><img src="icones/animais/ico_cachorro.png" class="ico-16"> Cachorros</label>
+                <input class="input" id="dom-cachorros" type="number" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="dom-gatos"><img src="icones/animais/ico_gato.png" class="ico-16"> Gatos</label>
+                <input class="input" id="dom-gatos" type="number" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="dom-passaros">🐦 Pássaros</label>
+                <input class="input" id="dom-passaros" type="number" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="dom-galinhas"><img src="icones/animais/ico_galinha.png" class="ico-16"> Galinhas</label>
+                <input class="input" id="dom-galinhas" type="number" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="dom-outros-animais"><img src="icones/animais/ico_outros_animais.png" class="ico-16"> Outros Animais</label>
+                <input class="input" id="dom-outros-animais" type="number" min="0" value="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado vazio quando não há animais -->
+          <div id="dom-animais-vazio" class="empty-state-animals" style="grid-column:span 2">
+            <div class="empty-icon">🐾</div>
+            <div class="empty-title">Nenhum animal registrado</div>
+            <div class="empty-sub">Altere "Possui Animais?" para Sim para detalhar</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-footer" style="justify-content:space-between;align-items:center">
+      <!-- Navegação entre abas no rodapé -->
+      <div class="u-flex-8">
+        <button type="button" id="dom-btn-prev" class="btn btn-secondary btn-sm"
+          onclick="domNavTab(-1)" style="display:none">← Anterior</button>
+        <button type="button" id="dom-btn-next" class="btn btn-secondary btn-sm"
+          onclick="domNavTab(1)">Próximo →</button>
+      </div>
+      <div class="u-flex-8">
+        <button class="btn btn-secondary" onclick="closeModal('modal-domicilio')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarDomicilio()">Salvar Domicílio</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL NOVA/EDITAR FAMÍLIA (dentro de domicílio existente) ===== -->
+<div class="modal-overlay" id="modal-familia">
+  <div class="modal u-max-500">
+    <div class="modal-header">
+      <div>
+        <h2 id="modal-familia-titulo"><img src="icones/familias/familias.png" class="ico-28"> Nova Família</h2>
+        <div id="modal-familia-endereco" class="u-sub-text"></div>
+      </div>
+      <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-familia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="section-divider"><img src="icones/individuo/ico_ind_identificacao.png" class="ico-22"> Dados da Família</div>
+        <div class="form-group"><label for="fam-prontuario">Nº do Prontuário Familiar *</label>
+          <input class="input" id="fam-prontuario" placeholder="Ex: FAM-001">
+          <div style="font-size:var(--text-2xs);color:var(--cinza-500);margin-top:3px">Gerado automaticamente se vazio</div>
+        </div>
+        <div class="form-group"><label for="fam-data-inicio">Data de Início (mês/ano) *</label>
+          <input class="input" type="month" id="fam-data-inicio">
+        </div>
+        <div class="form-group"><label for="fam-renda">Renda Familiar (salários mínimos)</label>
+          <div class="u-flex-8-ac">
+            <input class="input u-flex1" type="number" id="fam-renda" step="0.1" min="0" value="1.0">
+            <span style="font-size:var(--text-sm);color:var(--cinza-600)">SM</span>
+          </div>
+        </div>
+        <div class="form-group"><label for="fam-risco">Risco Familiar</label>
+          <select class="input" id="fam-risco">
+            <option value="baixo">Baixo risco</option>
+            <option value="medio">Médio risco</option>
+            <option value="alto">Alto risco</option>
+          </select>
+        </div>
+        <div class="form-group span2"><label for="fam-obs">Observações</label>
+          <input class="input" id="fam-obs" placeholder="Observações relevantes...">
+        </div>
+      </div>
+      <div class="u-info-gray-mt">
+        ℹ️ O responsável pela família será o primeiro membro cadastrado automaticamente. Você pode alterar isso na ficha de cada membro.
+      </div>
+    </div>
+    <div class="modal-footer u-jc-between">
+      <div>
+        <button class="btn btn-danger btn-sm" id="btn-excluir-familia" style="display:none" onclick="excluirFamiliaDoModal()">🗑 Excluir Família</button>
+      </div>
+      <div class="u-flex-8">
+        <button class="btn btn-secondary" onclick="closeModal('modal-familia')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarFamilia()">Salvar Família</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- campos compatibilidade legado (ocultos) -->
+<input type="hidden" id="fam-responsavel" value="">
+<input type="hidden" id="fam-membros" value="0">
+<input type="hidden" id="fam-vulnerabilidade" value="nao">
+<input type="hidden" id="fam-cpf" value="">
+<input type="hidden" id="fam-cns" value="">
+<input type="hidden" id="fam-nasc-resp" value="">
+
+<!-- Modal Novo Indivíduo -->
+<div class="modal-overlay" id="modal-individuo">
+  <div class="modal" style="max-width:820px">
+    <div class="modal-header">
+      <div>
+        <h2 id="modal-ind-titulo">Cadastrar Indivíduo</h2>
+        <div id="modal-ind-endereco" class="modal-header-sub"></div>
+        <div id="modal-ind-idade" class="modal-header-sub"></div>
+      </div>
+      <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-individuo')">✕</button>
+    </div>
+    <div class="modal-body u-flex-col">
+      <!-- TABS do modal -->
+      <div class="tabs" role="tablist" aria-label="Ficha do Indivíduo">
+        <button class="tab active" type="button" role="tab" id="tab-btn-ind-tab-dados" aria-selected="true" aria-controls="ind-tab-dados" onclick="switchTab(this,'ind-tab-dados')"><img src="icones/individuo/ico_ind_dados.png" class="ico-22"> Dados</button>
+        <button class="tab" type="button" role="tab" id="tab-btn-ind-tab-saude" aria-selected="false" aria-controls="ind-tab-saude" onclick="switchTab(this,'ind-tab-saude')"><img src="icones/individuo/ico_ind_saude.png" class="ico-22"> Saúde</button>
+        <button class="tab" type="button" role="tab" id="tab-btn-ind-tab-social" aria-selected="false" aria-controls="ind-tab-social" onclick="switchTab(this,'ind-tab-social')"><img src="icones/individuo/ico_ind_obs.png" class="ico-22"> Social</button>
+        <button class="tab" type="button" role="tab" id="tab-btn-ind-tab-med" aria-selected="false" aria-controls="ind-tab-med" onclick="switchTab(this,'ind-tab-med')"><img src="icones/chips/ico_chip_sangue.png" class="ico-22"> Medicações</button>
+        <button class="tab" type="button" role="tab" id="tab-btn-ind-tab-vacina" aria-selected="false" aria-controls="ind-tab-vacina" onclick="switchTab(this,'ind-tab-vacina')"><img src="icones/vacinas_icons/ico_vac_influenza.png" class="ico-22"> Vacinas</button>
+        <button class="tab" type="button" role="tab" id="tab-btn-ind-tab-historico" aria-selected="false" aria-controls="ind-tab-historico" onclick="switchTab(this,'ind-tab-historico');renderIndHistorico()"><img src="icones/individuo/ico_ind_anotacoes.png" class="ico-22"> Histórico</button>
+      </div>
+
+      <!-- TAB: DADOS -->
+      <div class="tab-content active" id="ind-tab-dados" role="tabpanel" aria-labelledby="tab-btn-ind-tab-dados">
+        <input type="hidden" id="ind-familia-id">
+
+        <!-- Identificação: nome + vínculo na mesma linha -->
+        <div class="ind-section">
+          <div class="ind-section-title"><img src="icones/individuo/ico_ind_identificacao.png" class="ico-22"> Identificação</div>
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px">
+            <div style="flex:3;min-width:0">
+              <label for="ind-nome">Nome Completo *</label>
+              <input class="input" id="ind-nome" placeholder="Nome completo do cidadão">
+            </div>
+            <div style="flex:1;min-width:120px">
+              <label for="ind-vinculo"><img src="icones/individuo/ico_ind_vinculo.png" class="ico-14"> Vínculo</label>
+              <select class="input" id="ind-vinculo">
+                <option value="Responsável">Responsável</option><option value="Cônjuge">Cônjuge</option>
+                <option value="Filho(a)">Filho(a)</option><option value="Pai/Mãe">Pai/Mãe</option>
+                <option value="Irmão(ã)">Irmão(ã)</option><option value="Neto(a)">Neto(a)</option>
+                <option value="Outro parente">Outro parente</option><option value="Agregado">Agregado</option>
+              </select>
+            </div>
+          </div>
+          <div class="ind-grid">
+            <div class="form-group" style="display:none"><label for="ind-nome-social">🏳️‍🌈 Nome Social</label><input class="input" id="ind-nome-social" placeholder="Preencher apenas se diferente do nome civil"></div>
+            <div class="form-group"><label for="ind-mae">👩 Nome da Mãe</label><input class="input" id="ind-mae" placeholder="Nome da mãe"></div>
+            <div class="form-group"><label for="ind-pai">👨 Nome do Pai</label><input class="input" id="ind-pai" placeholder="Nome do pai"></div>
+            <div class="form-group" style="display:none"><label for="ind-cpf">🪪 CPF</label><input class="input" id="ind-cpf" placeholder="000.000.000-00" maxlength="14"></div>
+            <div class="form-group" style="display:none"><label for="ind-cns">🏥 CNS</label><input class="input" id="ind-cns" placeholder="000 0000 0000 0000" maxlength="15"></div>
+          </div>
+        </div>
+
+        <!-- Dados demográficos — linha compacta -->
+        <div class="ind-section">
+          <div class="ind-section-title"><img src="icones/individuo/ico_ind_dados.png" class="ico-22"> Dados pessoais</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:110px;flex:1">
+              <label for="ind-nasc"><img src="icones/agenda/agenda.png" class="ico-14"> Nascimento **</label>
+              <input class="input" type="text" id="ind-nasc" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this);atualizarVacinasPorIdade();toggleOdontoField()">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:90px;flex:0 0 auto">
+              <label for="ind-sexo"><img src="icones/individuo/ico_ind_sexo.png" class="ico-14"> Sexo</label>
+              <select class="input" id="ind-sexo" onchange="toggleExamesFemininos()">
+                <option value="F">Feminino</option><option value="M">Masculino</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:100px;flex:1">
+              <label for="ind-raca">🎨 Raça/Cor</label>
+              <select class="input" id="ind-raca">
+                <option>Branca</option><option>Preta</option><option>Amarela</option><option>Parda</option><option>Indígena</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:150px;flex:2">
+              <label for="ind-escolaridade"><img src="icones/individuo/ico_ind_escolaridade.png" class="ico-14"> Escolaridade</label>
+              <select class="input" id="ind-escolaridade">
+                <option>Sem escolaridade</option><option>Fundamental incompleto</option><option>Fundamental completo</option>
+                <option>Médio incompleto</option><option>Médio completo</option><option>Superior</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:130px;flex:1">
+              <label for="ind-trabalho"><img src="icones/individuo/ico_ind_trabalho.png" class="ico-14"> Trabalho</label>
+              <select class="input" id="ind-trabalho">
+                <option value="Não se aplica">Não se aplica</option>
+                <option value="Empregado">Empregado</option>
+                <option value="Autônomo">Autônomo</option>
+                <option value="Desempregado">Desempregado</option>
+                <option value="Aposentado">Aposentado</option>
+                <option value="Estudante">Estudante</option>
+                <option value="Do lar">Do lar</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- TAB: SAÚDE -->
+      <div class="tab-content" id="ind-tab-saude" role="tabpanel" aria-labelledby="tab-btn-ind-tab-saude">
+        <!-- Condições crônicas em chips 2 colunas -->
+        <div class="ind-section">
+          <div class="ind-section-title"><img src="icones/individuo/ico_ind_saude.png" class="ico-22"> Condições de Saúde</div>
+          <div class="saude-grid">
+            <div class="saude-chip">
+              <span class="sc-icon">🫀</span>
+              <span class="sc-label">HAS</span>
+              <select class="sc-select" id="ind-has"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_dm.png" class="ico-22">
+              <span class="sc-label">Diabetes</span>
+              <select class="sc-select" id="ind-dm"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_gestante.png" class="ico-22">
+              <span class="sc-label">Gestante</span>
+              <select class="sc-select" id="ind-gestante"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_mental.png" class="ico-22">
+              <span class="sc-label">Saúde Mental</span>
+              <select class="sc-select" id="ind-mental"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_cancer.png" class="ico-22">
+              <span class="sc-label">Câncer</span>
+              <select class="sc-select" id="ind-cancer"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_acamado.png" class="ico-22">
+              <span class="sc-label">Acamado</span>
+              <select class="sc-select" id="ind-acamado"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_tea.png" class="ico-22">
+              <span class="sc-label">TEA / Autismo</span>
+              <select class="sc-select" id="ind-tea"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_tb.png" class="ico-22">
+              <span class="sc-label">TB/Hanseníase</span>
+              <select class="sc-select u-input-sm100" id="ind-tb"><option value="nao">Não</option><option value="tb">Tuberculose</option><option value="hanseniase">Hanseníase</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_deficiencia.png" class="ico-22">
+              <span class="sc-label">Deficiência</span>
+              <select class="sc-select u-input-sm100" id="ind-deficiencia">
+                <option value="nao">Não</option><option value="fisica">Física</option><option value="intelectual">Intelectual</option>
+                <option value="visual">Visual</option><option value="auditiva">Auditiva</option><option value="multipla">Múltipla</option>
+              </select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_avc.png" class="ico-22">
+              <span class="sc-label">AVC (hist.)</span>
+              <select class="sc-select" id="ind-avc"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_infarto.png" class="ico-22">
+              <span class="sc-label">Infarto (hist.)</span>
+              <select class="sc-select" id="ind-infarto"><option value="nao">Não</option><option value="sim">Sim</option></select>
+            </div>
+            <div class="saude-chip">
+              <img src="icones/chips/ico_chip_alcool.png" class="ico-22">
+              <span class="sc-label">Álcool / Drogas</span>
+              <select class="sc-select u-input-sm70" id="ind-alcool" title="Álcool"><option value="nao">Álc. Não</option><option value="sim">Álc. Sim</option></select>
+              <select class="sc-select u-input-sm70" id="ind-drogas" title="Drogas"><option value="nao">Drg. Não</option><option value="sim">Drg. Sim</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outras condições e alergias -->
+        <div class="ind-section">
+          <div class="ind-section-title"><img src="icones/individuo/ico_ind_obs.png" class="ico-22"> Observações clínicas</div>
+          <div class="ind-grid">
+            <div class="form-group span2"><label>Outras Condições</label><input class="input" id="ind-outras" placeholder="Epilepsia, IRC, DST/IST, DPOC, etc..."></div>
+            <div class="form-group span2"><label>⚠️ Alergias</label><input class="input" id="ind-alergias" placeholder="Ex: Penicilina, AAS, Dipirona, Amendoim, Látex..."></div>
+          </div>
+        </div>
+
+        <!-- Avaliação odontológica (crianças < 2 anos) -->
+        <div id="ind-exame-odonto" style="display:none">
+          <div class="ind-section ind-section-green">
+            <div class="ind-section-title u-color-green"><img src="icones/individuo/ico_ind_bucal.png" class="ico-22"> Saúde Bucal — Criança &lt;2 anos</div>
+            <div class="ind-grid">
+              <div class="form-group"><label>1ª Avaliação Odontológica</label>
+                <input class="input date-input" type="text" id="ind-odonto-data" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)" onchange="verificarOdontoStatus()">
+              </div>
+              <div class="form-group"><label class="u-flex-6">Status <span id="ind-odonto-status"></span></label>
+                <div id="ind-odonto-info" class="u-input-note">
+                  Toda criança &lt;2 anos deve ter ao menos uma avaliação.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exames preventivos femininos -->
+        <div id="ind-exames-femininos" style="display:none">
+          <div class="ind-section ind-section-purple">
+            <div class="ind-section-title u-color-purple"><img src="icones/individuo/ico_ind_exames.png" class="ico-22"> Exames Preventivos Femininos</div>
+            <div class="ind-grid">
+              <div class="form-group"><label>Papanicolau — Último exame</label>
+                <input class="input date-input" type="text" id="ind-papanicolau" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)" onchange="verificarExamesAtrasados()">
+              </div>
+              <div class="form-group"><label class="u-flex-6">Status Papanicolau <span id="ind-papanicolau-status"></span></label>
+                <div id="ind-papanicolau-info" class="u-input-note">Preencha a data para verificar.</div>
+              </div>
+              <div class="form-group" id="ind-mamografia-wrap"><label>Mamografia — Último exame</label>
+                <input class="input date-input" type="text" id="ind-mamografia" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)" onchange="verificarExamesAtrasados()">
+              </div>
+              <div class="form-group" id="ind-mamografia-status-wrap"><label class="u-flex-6">Status Mamografia <span id="ind-mamografia-status"></span></label>
+                <div id="ind-mamografia-info" class="u-input-note">Preencha a data para verificar.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SOCIAL -->
+      <div class="tab-content" id="ind-tab-social" role="tabpanel" aria-labelledby="tab-btn-ind-tab-social">
+        <div class="ind-section">
+          <div class="ind-section-title"><img src="icones/individuo/ico_ind_beneficios.png" class="ico-22"> Benefícios & Programas</div>
+          <div class="saude-grid" style="gap:8px">
+            <label class="ind-check-pill span2 u-span2">
+              <input type="checkbox" id="ind-bolsa-familia" onchange="toggleBolsaPesagem()">
+              <img src="icones/individuo/ico_ind_beneficios.png" class="ico-16"> Beneficiário do Bolsa Família
+            </label>
+            <div id="ind-bolsa-pesagem-wrap" class="u-span2-hidden">
+              <div class="u-info-green">
+                <label class="label-green"><img src="icones/agenda/agenda.png" class="ico-16"> Última pesagem</label>
+                <input class="input date-input" type="text" id="ind-bolsa-pesagem" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)">
+              </div>
+            </div>
+            <label class="ind-check-pill">
+              <input type="checkbox" id="ind-bpc-loas">
+              🏛️ BPC/LOAS
+            </label>
+            <label class="ind-check-pill">
+              <input type="checkbox" id="ind-recebe-fraldas">
+              👶 Recebe Fraldas
+            </label>
+            <label class="ind-check-pill u-span2">
+              <input type="checkbox" id="ind-recebe-fitas">
+              <img src="icones/chips/ico_chip_dm.png" class="ico-16"> Recebe Fitas de Glicemia
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MEDICAÇÕES -->
+      <div class="tab-content" id="ind-tab-med" role="tabpanel" aria-labelledby="tab-btn-ind-tab-med">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:var(--text-sm);font-weight:600;color:var(--slate-700)"><img src="icones/chips/ico_chip_sangue.png" class="ico-22"> Medicamentos em uso contínuo</span>
+          <button class="btn btn-primary btn-sm" onclick="adicionarMedicacao()" style="min-height:36px;padding:0 14px">+ Adicionar</button>
+        </div>
+        <div id="lista-medicacoes" class="u-scroll-220"></div>
+        <div style="margin-top:10px;padding:8px 10px;background:var(--slate-100);border-radius:8px;font-size:11.5px;color:var(--slate-600);line-height:1.5">
+          <strong>💡 Comuns:</strong> Losartana, Hidroclorotiazida, Enalapril, Anlodipino, Metformina, Glibenclamida, Insulina NPH, Atorvastatina, AAS, Omeprazol, Levotiroxina, Fluoxetina, Haloperidol, Clonazepam
+        </div>
+      </div>
+
+      <!-- TAB: VACINAS -->
+      <div class="tab-content" id="ind-tab-vacina" role="tabpanel" aria-labelledby="tab-btn-ind-tab-vacina">
+        <div class="u-label-desc" id="vacina-idade-info"></div>
+        <div id="calendario-vacina" class="u-scroll-380"></div>
+        <div style="margin-top:10px;display:flex;gap:12px;font-size:var(--text-xs);flex-wrap:wrap">
+          <span class="u-flex-4-ac"><span class="legend-box legend-green"></span>Aplicada</span>
+          <span class="u-flex-4-ac"><span class="legend-box legend-red"></span>Pendente</span>
+          <span class="u-flex-4-ac"><span class="legend-box legend-gray"></span>Não aplicável</span>
+        </div>
+      </div>
+
+      <!-- TAB: HISTÓRICO (Visitas + Fichas lado a lado) -->
+      <div class="tab-content" id="ind-tab-historico" role="tabpanel" aria-labelledby="tab-btn-ind-tab-historico">
+        <div class="ind-historico-split">
+          <div class="ind-historico-col">
+            <div class="ind-historico-col-header">🏠 Visitas</div>
+            <div id="ind-visitas-content" class="ind-historico-scroll">
+              <div class="u-empty-state">Carregando…</div>
+            </div>
+          </div>
+          <div class="ind-historico-divider"></div>
+          <div class="ind-historico-col">
+            <div class="ind-historico-col-header">📋 Fichas</div>
+            <div id="ind-fichas-content" class="ind-historico-scroll">
+              <div class="u-empty-state">Carregando…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ANOTAÇÕES -->
+
+    </div>
+    <div class="modal-footer u-jc-between">
+      <div>
+        <button class="btn btn-danger btn-sm" id="btn-excluir-individuo" style="display:none" onclick="excluirIndividuoDoModal()">🗑 Excluir Indivíduo</button>
+      </div>
+      <div class="u-flex-8">
+        <button class="btn btn-secondary" onclick="closeModal('modal-individuo')">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarIndividuo()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ficha de Visita -->
+<div class="modal-overlay" id="modal-visita">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h2 id="modal-vis-titulo"><img src="icones/visitas/visitas.png" class="ico-28"> Registrar Visita</h2>
+      <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-visita')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label for="vis-data">Data da Visita *</label><input class="input date-input" type="text" id="vis-data" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)"></div>
+        <div class="form-group"><label for="vis-turno">Turno</label>
+          <select class="input" id="vis-turno">
+            <option value="manha">Manhã</option><option value="tarde">Tarde</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label for="vis-familia">Domicílio *</label>
+          <select class="input" id="vis-familia" onchange="renderMembrosList()"></select>
+        </div>
+
+        <!-- Tipo de visita: família ou indivíduo -->
+        <fieldset class="form-group span2" style="border:none;padding:0;margin:0">
+          <legend style="font-size:var(--text-sm);font-weight:600;color:var(--slate-700);margin-bottom:6px">Escopo da Visita</legend>
+          <div class="u-flex-10-mt6">
+            <label class="u-flex-label">
+              <input type="radio" name="vis-escopo" value="familia" checked onchange="toggleVisitaEscopo()"> Visita ao domicílio (conta para metas)
+            </label>
+            <label class="u-flex-label">
+              <input type="radio" name="vis-escopo" value="individuo" onchange="toggleVisitaEscopo()"> Acompanhamento individual
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Seleção de membro (só aparece no escopo individuo) -->
+        <div class="form-group span2" id="vis-membro-wrap" style="display:none">
+          <label for="vis-membro">Indivíduo Atendido</label>
+          <select class="input" id="vis-membro"></select>
+        </div>
+
+        <div class="form-group"><label for="vis-tipo">Tipo de Visita</label>
+          <select class="input" id="vis-tipo">
+            <option>Visita de rotina</option><option>Acompanhamento de crônico</option><option>Gestante</option>
+            <option>Criança</option><option>Idoso</option><option>Saúde Mental</option>
+            <option>Alto risco</option><option>Cadastramento</option><option>Busca ativa</option><option>Emergencial</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="vis-desfecho">Desfecho</label>
+          <select class="input" id="vis-desfecho">
+            <option>Visita realizada</option><option>Ausente</option><option>Recusou</option><option>Mudou-se</option><option>Óbito</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="vis-vacina">Vacinação em dia?</label>
+          <select class="input" id="vis-vacina"><option value="nao-avaliado">Não avaliado</option><option value="sim">Sim</option><option value="nao">Não</option><option value="pendente">Pendente</option></select>
+        </div>
+        <div class="form-group"><label for="vis-encam">Encaminhamento?</label>
+          <select class="input" id="vis-encam"><option value="nao">Não</option><option value="sim">Sim</option></select>
+        </div>
+
+        <div class="form-group span2">
+          <label for="vis-pendencia">Pendência gerada?</label>
+          <input class="input" id="vis-pendencia" placeholder="Descreva se houver nova pendência...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-visita')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarVisita()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Pendência -->
+<div class="modal-overlay" id="modal-pendencia">
+  <div class="modal u-max-500">
+    <div class="modal-header">
+      <h2><img src="icones/pendencias/pendencias.png" class="ico-28"> Nova Pendência</h2>
+      <button class="close-btn" aria-label="Fechar" title="Fechar" onclick="closeModal('modal-pendencia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid col1 u-gap-10">
+        <div class="form-group"><label for="pend-titulo">Título / Descrição *</label><input class="input" id="pend-titulo" placeholder="Ex: Realizar visita à família Santos"></div>
+        <div class="form-group"><label for="pend-tipo">Tipo</label>
+          <select class="input" id="pend-tipo">
+            <option value="visita">Visita atrasada</option><option value="cadastro">Cadastro incompleto</option>
+            <option value="vacina">Vacina pendente</option><option value="encaminhamento">Encaminhamento</option>
+            <option value="exame">Exame solicitado</option><option value="retorno">Retorno agendado</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="pend-prioridade">Prioridade</label>
+          <select class="input" id="pend-prioridade">
+            <option value="urgente">Urgente</option><option value="alta">Alta</option>
+            <option value="media">Média</option><option value="baixa">Baixa</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="pend-familia">Família Relacionada</label>
+          <select class="input" id="pend-familia"><option value="">Geral (sem família específica)</option></select>
+        </div>
+        <div class="form-group"><label for="pend-prazo">Prazo</label><input class="input date-input" type="text" id="pend-prazo" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)"></div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-pendencia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarPendencia()">Nova Pendência</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-stack" id="toast-stack"></div>
+
+<!-- Overlay para fechar painel -->
+<div class="notif-overlay" id="notif-overlay" onclick="toggleNotifPanel()"></div>
+
+<!-- Painel de histórico de atividades -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-header">
+    <span class="notif-panel-title"><img src="icones/sistema/ico_notificacao.png" class="ico-28"> Atividades Recentes</span>
+    <div class="notif-panel-actions">
+      <button class="btn btn-secondary btn-sm" onclick="limparNotificacoes()" title="Limpar tudo"><img src="icones/sistema/ico_excluir.png" class="ico-22"> Limpar</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleNotifPanel()">✕</button>
+    </div>
+  </div>
+  <div class="notif-panel-body" id="notif-panel-body">
+    <div class="u-empty-state-sm">Nenhuma atividade ainda.</div>
+  </div>
+</div>
+
+
+<!-- Demo DB: carregado sob demanda em demo-db.json via app-import.js -->
+
+
+
+
+<!-- ── Modal: Card do Domicílio ────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-dom-card">
+  <div class="modal dom-card-modal" style="padding:0;overflow:hidden">
+    <div id="modal-dom-card-body"></div>
+  </div>
+</div>
+
+<script src="crypto.js" defer></script>
+<script src="auth.js" defer></script>
+<script src="app-utils.js" defer></script>
+<script src="app-core.js" defer></script>
+<script src="app-vacinas.js" defer></script>
+<script src="app-ui.js" defer></script>
+<script src="app-render.js" defer></script>
+<script src="app-config.js" defer></script>
+<script src="app-crud.js" defer></script>
+<script src="app-export.js" defer></script>
+<script src="app-metas.js" defer></script>
+<script src="app-medicamentos.js" defer></script>
+<script src="app-fichas.js" defer></script>
+<script src="app-municipio.js" defer></script>
+<script src="app-import.js" defer></script>
+
+
+
+<!-- Modal principal de visita individual -->
+<div class="modal-overlay" id="modal-visita-ind">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <h2><img src="icones/sistema/ico_visita_individuo.png" class="ico-28"> Registrar Visita Individual</h2>
+      <button class="close-btn" aria-label="Fechar" onclick="_visInd.close()">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:10px">
+      <div class="vis-ind-header">
+        <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <h3 id="vis-ind-nome-label" style="margin:0;font-size:var(--text-md);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--slate-900)">—</h3>
+          <div id="vis-ind-idade-label" class="modal-header-sub"></div>
+        </div>
+        <div class="vis-ind-inline-field">
+          <label for="vis-ind-data">Data</label>
+          <input type="text" class="date-input" id="vis-ind-data" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)">
+        </div>
+        <div class="vis-ind-inline-field">
+          <label for="vis-ind-turno">Turno</label>
+          <select id="vis-ind-turno">
+            <option value="manha">Manhã</option>
+            <option value="tarde">Tarde</option>
+            <option value="noite">Noite</option>
+          </select>
+        </div>
+      </div>
+      <div class="vis-ind-tabs">
+        <button class="vis-ind-tab active" onclick="_visInd.tab(this,'pane-fichas')"><img src="icones/individuo/ico_ind_anotacoes.png" class="ico-22"> Fichas</button>
+        <button class="vis-ind-tab" onclick="_visInd.tab(this,'pane-vacinas')"><img src="icones/vacinas_icons/ico_vac_influenza.png" class="ico-22"> Vacinas</button>
+        <button class="vis-ind-tab" onclick="_visInd.tab(this,'pane-medicacoes')"><img src="icones/chips/ico_chip_sangue.png" class="ico-22"> Medicações</button>
+      </div>
+      <div class="vis-ind-pane active" id="pane-fichas">
+        <div id="vis-ind-fichas-list"></div>
+        <div id="vis-ind-ficha-subform"></div>
+
+      </div>
+      <div class="vis-ind-pane" id="pane-vacinas">
+        <div id="vis-ind-vacinas-content">
+          <div class="u-label-desc" id="vis-vacina-idade-info"></div>
+          <div id="vis-calendario-vacina" class="u-scroll-340"></div>
+        </div>
+      </div>
+      <div class="vis-ind-pane" id="pane-medicacoes">
+        <div class="u-flex-col-10">
+          <div id="lista-medicacoes-modal"></div>
+          <button class="btn btn-secondary btn-sm u-align-start" onclick="_visInd._addMed()">+ Adicionar Medicação</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-secondary" onclick="(function(){ var id=_visInd.getIndId(); _visInd.close(); editarIndividuo(id); })()" title="Editar cadastro do indivíduo">✎ Editar Indivíduo</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="_visInd.close()">Cancelar</button>
+        <button class="btn btn-primary" onclick="_visInd.salvar()">Registrar Visita</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mini-modal para registrar vacina avulsa (sem lote) -->
+<div class="modal-overlay" id="modal-add-vacina">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2><img src="icones/vacinas_icons/ico_vac_influenza.png" class="ico-28"> Registrar Vacina</h2>
+      <button class="close-btn" onclick="document.getElementById('modal-add-vacina').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="u-flex-col-12">
+        <div>
+          <label class="label">Vacina</label>
+          <select class="input u-w100" id="add-vac-nome"></select>
+        </div>
+        <div class="u-flex-10">
+          <div class="u-flex1">
+            <label class="label">Nº Dose</label>
+            <select class="input" id="add-vac-dose">
+              <option value="1">1ª dose</option>
+              <option value="2">2ª dose</option>
+              <option value="3">3ª dose</option>
+              <option value="R">Reforço</option>
+              <option value="U">Dose única</option>
+            </select>
+          </div>
+          <div class="u-flex1">
+            <label class="label">Data de aplicação</label>
+            <input type="text" class="input date-input" id="add-vac-data" maxlength="10" placeholder="dd/mm/aaaa" oninput="mascararData(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-add-vacina').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" onclick="_visInd._salvarVacina()">Salvar Vacina</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TEMPLATES HTML — não são renderizados pelo browser.
+     Clonados via cloneTemplate(id) em app-utils.js.
+     Resolve: #5 Bloat · #6 CSS/JS acoplados · #9 Inconsistência · #10 Manutenibilidade
+     ════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Estado vazio genérico (substitui 9+ variantes inline espalhadas no JS) -->
+<template id="tpl-empty-state">
+  <div class="tpl-empty-state">
+    <div class="es-icon"></div>
+    <div class="es-title"></div>
+    <div class="es-desc"></div>
+    <button class="btn btn-primary es-btn" hidden></button>
+  </div>
+</template>
+
+<!-- Card de visita individual na agenda (dashboard + página agenda) -->
+<template id="tpl-agenda-visita">
+  <div class="agenda-visita">
+    <span class="hora"></span>
+    <div class="av-body">
+      <strong class="av-familia"></strong>
+      <span class="av-tipo"></span>
+      <span class="av-obs"></span>
+    </div>
+    <button class="btn btn-danger btn-sm av-remover" hidden>✕</button>
+  </div>
+</template>
+
+<!-- Grupo de um dia na agenda (contém múltiplos tpl-agenda-visita) -->
+<template id="tpl-agenda-dia">
+  <div class="agenda-dia">
+    <div class="agenda-dia-header">
+      <span class="ad-data"></span>
+      <span class="badge badge-blue ad-count"></span>
+    </div>
+    <div class="ad-visitas"></div>
+  </div>
+</template>
+
+<!-- Linha da tabela principal de visitas registradas -->
+<template id="tpl-visita-table-row">
+  <tr>
+    <td class="vtr-data td-mono"></td>
+    <td class="vtr-endereco td-truncate"></td>
+    <td class="vtr-tipo"><span class="badge badge-blue"></span></td>
+    <td class="vtr-acoes td-nowrap">
+      <button class="btn btn-secondary btn-sm vtr-btn-editar">✏️</button>
+      <button class="btn btn-sm btn-danger-soft vtr-btn-excluir">🗑</button>
+    </td>
+  </tr>
+</template>
+
+<!-- Item rápido de pendência no dashboard (versão compacta) -->
+<template id="tpl-dash-pend-item">
+  <div class="dash-pend-item">
+    <div class="dpi-dot"></div>
+    <div class="dpi-body">
+      <div class="dpi-titulo"></div>
+      <div class="dpi-sub"></div>
+    </div>
+  </div>
+</template>
+
+<!-- Item de alerta no dashboard -->
+<template id="tpl-alerta-item">
+  <div class="alerta-item">
+    <div class="alerta-icon"></div>
+    <div class="alerta-body">
+      <div class="alerta-titulo"></div>
+      <div class="alerta-texto"></div>
+    </div>
+  </div>
+</template>
+
+<!-- Card de histórico de visita do indivíduo (aba Histórico) -->
+<template id="tpl-visita-historico-row">
+  <div class="vhr-card">
+    <div class="vhr-header">
+      <span class="vhr-data"></span>
+      <span class="badge badge-azul vhr-turno"></span>
+    </div>
+    <div class="vhr-campo"><strong>Tipo:</strong> <span class="vhr-tipo"></span></div>
+    <div class="vhr-campo"><strong>Desfecho:</strong> <span class="vhr-desfecho"></span></div>
+    <div class="vhr-campo vhr-obs-wrap" hidden></div>
+  </div>
+</template>
+
+<!-- Bloco de ficha de acompanhamento (HAS/DM/etc.) na aba do indivíduo -->
+<template id="tpl-ficha-acomp-bloco">
+  <div class="fab-bloco">
+    <div class="fab-header"></div>
+    <div class="fab-campos"></div>
+  </div>
+</template>
+
+<!-- Campo individual dentro de tpl-ficha-acomp-bloco -->
+<template id="tpl-ficha-campo">
+  <div class="fab-campo">
+    <span class="fab-campo-key"></span>
+    <strong class="fab-campo-val"></strong>
+  </div>
+</template>
+
+<!-- Card de membro da família (lista de membros) -->
+<template id="tpl-membro-card">
+  <div class="membro-item">
+    <div class="membro-avatar"></div>
+    <div class="membro-info">
+      <div class="membro-nome-row">
+        <span class="membro-nome"></span>
+        <span class="badge membro-badge-faixa"></span>
+        <span class="membro-resp-star" title="Responsável pela família" hidden>⭐</span>
+      </div>
+      <div class="membro-sub membro-idade"></div>
+      <div class="membro-conds membro-conds-row" hidden></div>
+      <div class="membro-sub membro-dpp" hidden></div>
+    </div>
+    <svg class="membro-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </div>
+</template>
+
+<!-- Item de pendência completo (página pendências) -->
+<template id="tpl-pendencia-item">
+  <div class="pend-item">
+    <div class="pend-icon-wrap"></div>
+    <div class="pend-text">
+      <div class="pend-titulo"></div>
+      <div class="pend-obs" hidden></div>
+      <div class="pend-individuo" hidden></div>
+      <div class="pend-end" hidden></div>
+      <div class="pend-meta"></div>
+    </div>
+    <div class="pend-actions">
+      <span class="pend-prio-pill"></span>
+      <div class="pend-btns">
+        <button class="pend-btn-toggle" title="Marcar como resolvido">✓</button>
+        <button class="pend-btn-del" title="Excluir">🗑</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Item de pendência virtual (gerado automaticamente) -->
+<template id="tpl-pendencia-virtual">
+  <div class="pend-item">
+    <div class="pend-icon-wrap"></div>
+    <div class="pend-text">
+      <div class="pend-titulo"></div>
+      <div class="pend-individuo" hidden></div>
+      <div class="pend-end" hidden></div>
+      <div class="pend-meta"><span class="pend-auto-tag">gerado automaticamente</span></div>
+    </div>
+    <span class="pend-prio-pill" hidden></span>
+  </div>
+</template>
+
+<!-- Item de indivíduo nas listas de acompanhamento (HAS, DM, Gestante, Hans, etc.) -->
+<template id="tpl-individuo-list-item">
+  <div class="individuo-list-item">
+    <span class="ili-avatar"></span>
+    <div class="ili-body">
+      <div class="ili-nome"></div>
+      <div class="ili-sub"></div>
+    </div>
+    <span class="ili-status"></span>
+  </div>
+</template>
+
+<!-- Card de medicação (visita individual) -->
+<template id="tpl-med-card">
+  <div class="med-card">
+    <div class="med-info">
+      <div class="med-label-row">
+        <span class="med-label-key">💊 Medicamento</span>
+      </div>
+      <div class="med-nome"></div>
+      <div class="med-local" hidden></div>
+    </div>
+    <div class="med-dose-wrap">
+      <div class="med-label-key">Dose · Freq.</div>
+      <div class="med-dose"></div>
+    </div>
+    <button class="btn-danger-soft med-remover" title="Remover">✕</button>
+  </div>
+</template>
+
+<!-- Linha das tabelas de acompanhamento por condição (HAS, DM, Gestante, etc.) -->
+<template id="tpl-acomp-row">
+  <tr>
+    <td class="atr-nome"><strong></strong></td>
+    <td class="atr-idade"></td>
+    <td class="atr-col3"></td>
+    <td class="atr-col4"></td>
+    <td class="atr-col5"></td>
+    <td class="atr-col6"></td>
+  </tr>
+</template>
+
+<!-- Linha da tabela principal de indivíduos -->
+<template id="tpl-individuo-table-row">
+  <tr>
+    <td class="itr-nome"></td>
+    <td class="itr-idade"></td>
+    <td class="itr-sexo"></td>
+    <td class="itr-familia td-xs"></td>
+    <td class="itr-condicoes"></td>
+    <td class="itr-meds itr-meds-cell"></td>
+    <td class="itr-risco"></td>
+    <td class="itr-acoes"></td>
+  </tr>
+</template>
+
+<!-- Card de ficha de acompanhamento no dashboard (HAS, DM, Gestante, Crianças) -->
+<template id="tpl-ficha-dash-row">
+  <div class="fdr-card">
+    <div class="fdr-icon"></div>
+    <div class="fdr-body">
+      <div class="fdr-header">
+        <span class="fdr-label"></span>
+        <span class="fdr-pct"></span>
+      </div>
+      <div class="fdr-bar-wrap">
+        <div class="fdr-bar-fill"></div>
+      </div>
+      <div class="fdr-counts">
+        <span class="fdr-ok"></span>
+        <span class="fdr-pend"></span>
+        <span class="fdr-total"></span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Card vazio (sem elegíveis) na lista de fichas do dashboard -->
+<template id="tpl-ficha-dash-empty">
+  <div class="fdr-card fdr-card-empty">
+    <span class="fdr-icon-empty"></span>
+    <div class="fdr-body">
+      <div class="fdr-label"></div>
+      <div class="fdr-empty-msg">Nenhum elegível cadastrado</div>
+    </div>
+  </div>
+</template>
+
+<!-- Card de membro no grid lazy (vista compacta da família) -->
+<template id="tpl-membro-grid-card">
+  <div class="membro-grid-card">
+    <span class="membro-grid-resp" hidden>Resp</span>
+    <div class="membro-grid-avatar"></div>
+    <div class="membro-grid-info">
+      <div class="membro-grid-nome"></div>
+      <div class="membro-grid-idade"></div>
+      <div class="membro-grid-conds" hidden></div>
+    </div>
+  </div>
+</template>
+
+<!-- Linha de novo medicamento (formulário de adição) -->
+<template id="tpl-med-new-row">
+  <div class="med-new-row">
+    <div class="med-new-nome-wrap">
+      <div class="med-label-key">💊 Medicamento</div>
+      <input class="input med-new-nome" placeholder="Nome do medicamento">
+    </div>
+    <div class="med-new-freq-wrap">
+      <div class="med-label-key">Frequência</div>
+      <select class="input med-new-freq">
+        <option>1x/dia</option>
+        <option>2x/dia</option>
+        <option>3x/dia</option>
+        <option>4x/dia</option>
+        <option>Conf. necessário</option>
+        <option>Semanal</option>
+      </select>
+    </div>
+    <button class="btn-danger-soft med-new-remover" title="Remover">✕</button>
+  </div>
+</template>
+
+<!-- Modal picker genérico (confirmar domicílio, família, etc.) -->
+<template id="tpl-picker-modal">
+  <div class="modal-overlay">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h2 class="pm-titulo"></h2>
+        <button class="btn-close pm-fechar" aria-label="Fechar" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body pm-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary pm-cancelar">Cancelar</button>
+        <button class="btn btn-primary pm-confirmar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Subformulário de ficha inline (visita individual) -->
+<template id="tpl-ficha-subform">
+  <div class="ficha-subform-wrap">
+    <div class="fsw-header">
+      <span class="fsw-titulo"></span>
+      <button class="btn btn-secondary btn-sm fsw-fechar">✕ Fechar</button>
+    </div>
+    <div class="fsw-body"></div>
+  </div>
+</template>
+
+<!-- Painel de resumo de metas mensais -->
+<template id="tpl-metas-resumo">
+  <div>
+    <div class="mr-header">
+      <div class="mr-numero"></div>
+      <div class="mr-subtitulo"></div>
+      <div class="mr-barra-wrap">
+        <div class="progress-bar" style="height:10px">
+          <div class="mr-barra-fill progress-fill"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mr-grid">
+      <div class="mr-linha" data-key="familias">
+        <span>Famílias cadastradas</span><strong></strong>
+      </div>
+      <div class="mr-linha" data-key="diasUteis">
+        <span>Dias úteis no mês</span><strong></strong>
+      </div>
+      <div class="mr-linha" data-key="metaDia">
+        <span>Meta por dia</span><strong></strong>
+      </div>
+      <div class="mr-linha" data-key="diasComVisita">
+        <span>Dias com visita</span><strong></strong>
+      </div>
+      <div class="mr-linha" data-key="faltando">
+        <span>Visitas faltando</span><strong class="mr-faltando"></strong>
+      </div>
+      <div class="mr-linha mr-linha-last" data-key="deficit">
+        <span>Déficit acumulado</span><strong class="mr-deficit"></strong>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script src="visita-individual.js" defer></script>
+<script src="personalizacao.js" defer></script>
+<script src="app-modo.js" defer></script>
+</body>
+</html>
